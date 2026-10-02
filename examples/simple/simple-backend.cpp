@@ -111,6 +111,13 @@ struct ggml_tensor * compute(simple_model & model, struct ggml_cgraph * gf) {
     return ggml_graph_node(gf, -1);
 }
 
+/*
+读 simple-backend.cpp 时，先掌握四件事：
+    - 计算图：创建算子是在描述计算，调用执行接口才真正计算。
+    - 内存：no_alloc = true 时，上下文保存张量描述，数值数据由后端分配。
+    - 执行顺序：初始化后端 → 建图 → 分配 → 写入输入 → 执行 → 读取结果。
+    - 维度与生命周期：理解 ne[] 的含义，以及 model.buf、调度器和后端分别管理什么资源。
+*/
 int main(void) {
     ggml_time_init();
 

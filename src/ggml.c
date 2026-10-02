@@ -1611,7 +1611,7 @@ static inline bool ggml_can_repeat_rows(const struct ggml_tensor * t0, const str
 struct ggml_context * ggml_init(struct ggml_init_params params) {
     static bool is_first_call = true;
 
-    ggml_critical_section_start();
+    ggml_critical_section_start();      // 加全局锁
 
     if (is_first_call) {
         // initialize time system (required on Windows)
@@ -1620,9 +1620,9 @@ struct ggml_context * ggml_init(struct ggml_init_params params) {
         is_first_call = false;
     }
 
-    ggml_critical_section_end();
+    ggml_critical_section_end();        // 解全局锁
 
-    struct ggml_context * ctx = GGML_MALLOC(sizeof(struct ggml_context));
+    struct ggml_context * ctx = GGML_MALLOC(sizeof(struct ggml_context));    // 底层就是 malloc 直接分配堆内存
 
     // allow to call ggml_init with 0 size
     if (params.mem_size == 0) {

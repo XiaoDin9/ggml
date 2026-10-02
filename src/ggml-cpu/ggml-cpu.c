@@ -3865,18 +3865,18 @@ int ggml_cpu_has_sme2(void) {
 }
 
 void ggml_cpu_init(void) {
-    // needed to initialize ggml_time
+    // needed to initialize ggml_time （Q.??? 作用是啥？）- S：它是在保证后面的计时函数能够正常使用。
     {
         struct ggml_init_params params = { 0, NULL, false };
         struct ggml_context * ctx = ggml_init(params);
         ggml_free(ctx);
     }
 
-    ggml_critical_section_start();
+    ggml_critical_section_start();          // 加全局锁
 
     static bool is_first_call = true;
 
-    if (is_first_call) {
+    if (is_first_call) {                    // 第一次调用时生成的表，是预先算好的转换和激活函数结果。
         // initialize GELU, Quick GELU, SILU and EXP F32 tables
         {
             const uint64_t t_start = ggml_time_us(); UNUSED(t_start);
@@ -3884,22 +3884,23 @@ void ggml_cpu_init(void) {
             for (int i = 0; i < (1 << 16); ++i) {
                 union {
                     uint16_t u16;
-                    ggml_fp16_t fp16;
+                    ggml_fp16_t fp16;                                       //  typedef uint16_t ggml_fp16_t;
                 } u = {i};
+
                 float f = GGML_COMPUTE_FP16_TO_FP32(u.fp16);
-                ggml_table_f32_f16[i] = f;
-                ggml_table_gelu_f16[i] = GGML_CPU_FP32_TO_FP16(ggml_gelu_f32(f));
-                ggml_table_gelu_quick_f16[i] = GGML_CPU_FP32_TO_FP16(ggml_gelu_quick_f32(f));
+                ggml_table_f32_f16[i] = f;                                                      // FP16 编码对应的 FP32 数值
+                ggml_table_gelu_f16[i] = GGML_CPU_FP32_TO_FP16(ggml_gelu_f32(f));               // 对应输入的 GELU 结果，以 FP16 编码保存
+                ggml_table_gelu_quick_f16[i] = GGML_CPU_FP32_TO_FP16(ggml_gelu_quick_f32(f));   // Quick GELU 结果，以 FP16 编码保存
             }
 
             // initialize E8M0 half table (256 entries)
             for (int i = 0; i < (1 << 8); ++i) {
-                ggml_table_f32_e8m0_half[i] = GGML_E8M0_TO_FP32_HALF(i);
+                ggml_table_f32_e8m0_half[i] = GGML_E8M0_TO_FP32_HALF(i);        // E8M0 缩放编码相关的 FP32 转换结果
             }
 
             // initialize UE4M3 table (256 entries)
             for (int i = 0; i < (1 << 8); ++i) {
-                ggml_table_f32_ue4m3[i] = ggml_ue4m3_to_fp32(i);
+                ggml_table_f32_ue4m3[i] = ggml_ue4m3_to_fp32(i);                // UE4M3 编码对应的 FP32 数值
             }
 
             const uint64_t t_end = ggml_time_us(); UNUSED(t_end);
@@ -3940,5 +3941,5 @@ void ggml_cpu_init(void) {
         is_first_call = false;
     }
 
-    ggml_critical_section_end();
+    ggml_critical_section_end();            // 解全局锁
 }

@@ -393,6 +393,7 @@ static inline uint32_t fp32_to_bits(float f) {
     return fp32.as_bits;
 }
 
+// fp16 转 fp32
 static inline float ggml_compute_fp16_to_fp32(ggml_fp16_t h) {
     const uint32_t w = (uint32_t) h << 16;
     const uint32_t sign = w & UINT32_C(0x80000000);

@@ -218,7 +218,7 @@ struct ggml_backend_registry {
     }
 
     ggml_backend_reg_t load_backend(const fs::path & path, bool silent) {
-        dl_handle_ptr handle { dl_load_library(path) };
+        dl_handle_ptr handle { dl_load_library(path) };         // dlopen 打开动态库，返回句柄     
         if (!handle) {
             if (!silent) {
                 GGML_LOG_ERROR("%s: failed to load %s: %s\n", __func__, path_str(path).c_str(), dl_error());
@@ -483,6 +483,7 @@ static ggml_backend_reg_t ggml_backend_load_best(const char * name, bool silent,
     const fs::path file_prefix = backend_filename_prefix().native() + name_path.native() + fs::u8path("-").native();
     const fs::path file_extension = backend_filename_extension();
 
+    // 获取要搜索的路径
     std::vector<fs::path> search_paths;
     if (user_search_path == nullptr) {
 #ifdef GGML_BACKEND_DIR
@@ -506,6 +507,7 @@ static ggml_backend_reg_t ggml_backend_load_best(const char * name, bool silent,
     std::error_code ec;
 
     for (const auto & search_path : search_paths) {
+        // 判断搜索的路径是否存在
         if (!fs::exists(search_path, ec)) {
             if (ec) {
                 GGML_LOG_DEBUG("%s: posix_stat(%s) failure, error-message: %s\n", __func__, path_str(search_path).c_str(), ec.message().c_str());
@@ -514,22 +516,26 @@ static ggml_backend_reg_t ggml_backend_load_best(const char * name, bool silent,
             }
             continue;
         }
+
         std::error_code dir_ec;
         fs::directory_iterator dir_it(search_path, fs::directory_options::skip_permission_denied, dir_ec);
         if (dir_ec) {
             GGML_LOG_DEBUG("%s: failed to enumerate %s: %s\n", __func__, path_str(search_path).c_str(), dir_ec.message().c_str());
             continue;
         }
+
         for (const fs::directory_iterator end; dir_it != end; dir_it.increment(dir_ec)) {
             const auto & entry = *dir_it;
             if (entry.is_regular_file(ec)) {
                 auto filename = entry.path().filename();
                 auto ext = entry.path().extension();
-                if (filename.native().find(file_prefix) == 0 && ext == file_extension) {
+
+                if (filename.native().find(file_prefix) == 0 && ext == file_extension) {        // 找到对应后端的 xxx.dll 库
                     dl_handle_ptr handle { dl_load_library(entry) };
                     if (!handle && !silent) {
                         GGML_LOG_ERROR("%s: failed to load %s: %s\n", __func__, path_str(entry.path()).c_str(), dl_error());
                     }
+
                     if (handle) {
                         auto score_fn = (ggml_backend_score_t) dl_get_sym(handle.get(), "ggml_backend_score");
                         if (score_fn) {
@@ -557,6 +563,7 @@ static ggml_backend_reg_t ggml_backend_load_best(const char * name, bool silent,
         for (const auto & search_path : search_paths) {
             fs::path filename = backend_filename_prefix().native() + name_path.native() + backend_filename_extension().native();
             fs::path path = search_path / filename;
+
             if (std::error_code ec; fs::exists(path, ec)) {
                 return get_reg().load_backend(path, silent);
             } else {
