@@ -262,25 +262,28 @@ static size_t ggml_hash_insert(struct ggml_hash_set * hash_set, struct ggml_tens
 // return index, asserts if table is full
 static size_t ggml_hash_find_or_insert(struct ggml_hash_set * hash_set, struct ggml_tensor * key);
 
-// hash function for ggml_tensor
+// hash function for ggml_tensor， 先根据张量的指针地址计算起始下标
 static inline size_t ggml_hash(const struct ggml_tensor * p) {
     // the last 4 bits are always zero due to alignment
-    return (size_t)(uintptr_t)p >> 4;
+    return (size_t)(uintptr_t)p >> 4;                       // 将地址右移 4 位，去掉因内存对齐而为零的低位。
 }
 
+// 在哈希集合中，找到张量指针 key 所在的位置，或者它可以插入的空位置。 函数本身不会插入元素，也不会修改集合。
 static size_t ggml_hash_find(const struct ggml_hash_set * hash_set, const struct ggml_tensor * key) {
-    size_t h = ggml_hash(key) % hash_set->size;
+    size_t h = ggml_hash(key) % hash_set->size; // 它使用线性探测处理哈希冲突
 
     // linear probing
     size_t i = h;
+
+    // 如果当前位置已被占用，且存放的指针不是 key，就继续检查下一个位置
     while (ggml_bitset_get(hash_set->used, i) && hash_set->keys[i] != key) {
-        i = (i + 1) % hash_set->size;
+        i = (i + 1) % hash_set->size;   // 到数组末尾后会回到开头；如果绕一圈仍没找到目标或空位，就返回 GGML_HASHSET_FULL。
         if (i == h) {
             // visited all hash table entries -> not found
-            return GGML_HASHSET_FULL;
+            return GGML_HASHSET_FULL;    // key 不存在，且表已满， 返回：GGML_HASHSET_FULL，即 `(size_t)-1
         }
     }
-    return i;
+    return i;   // Key 存在，返回它所在的槽位下标 or key 不存在，但还有空位, 返回它可插入的空槽位下标
 }
 
 static bool ggml_hash_contains(const struct ggml_hash_set * hash_set, struct ggml_tensor * key) {

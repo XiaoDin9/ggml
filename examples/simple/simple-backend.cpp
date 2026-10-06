@@ -55,18 +55,33 @@ float matrix_B[rows_B * cols_B] = {
 void init_model(simple_model & model) {
     ggml_log_set(ggml_log_callback_default, nullptr);
 
+#ifdef GGML_BACKEND_DL
+    // Plugin backends need explicit loading; linked backends register automatically.
     ggml_backend_load_all();
+#endif
 
     model.backend = ggml_backend_init_best();
-    model.cpu_backend = ggml_backend_init_by_type(GGML_BACKEND_DEVICE_TYPE_CPU, nullptr);
+    GGML_ASSERT(model.backend != nullptr);
+
+    // Reuse the selected CPU backend; a GPU backend needs a separate CPU fallback.
+    if (ggml_backend_dev_type(ggml_backend_get_device(model.backend)) == GGML_BACKEND_DEVICE_TYPE_CPU) {
+        model.cpu_backend = model.backend;
+    } else {
+        model.cpu_backend = ggml_backend_init_by_type(GGML_BACKEND_DEVICE_TYPE_CPU, nullptr);
+    }
+    GGML_ASSERT(model.cpu_backend != nullptr);
 
     ggml_backend_t backends[2] = { model.backend, model.cpu_backend };
-    model.sched = ggml_backend_sched_new(backends, nullptr, 2, GGML_DEFAULT_GRAPH_SIZE, false, true);
+    const int n_backends = model.backend == model.cpu_backend ? 1 : 2;
+
+    // 创建调度器，准备管理资源， Q.???
+    model.sched = ggml_backend_sched_new(backends, nullptr, n_backends, GGML_DEFAULT_GRAPH_SIZE, false, true);
 }
 
 // build the compute graph to perform a matrix multiplication
 struct ggml_cgraph * build_graph(simple_model& model) {
-    size_t buf_size = ggml_tensor_overhead()*GGML_DEFAULT_GRAPH_SIZE + ggml_graph_overhead();
+    size_t buf_size = ggml_tensor_overhead() * GGML_DEFAULT_GRAPH_SIZE + ggml_graph_overhead();
+    // 预留若干个张量的管理空间，再加上计算图的管理空间
     model.buf.resize(buf_size);
 
     struct ggml_init_params params0 = {
@@ -111,6 +126,13 @@ struct ggml_tensor * compute(simple_model & model, struct ggml_cgraph * gf) {
     return ggml_graph_node(gf, -1);
 }
 
+/*
+读 simple-backend.cpp 时，先掌握四件事：
+    - 计算图：创建算子是在描述计算，调用执行接口才真正计算。
+    - 内存：no_alloc = true 时，上下文保存张量描述，数值数据由后端分配。
+    - 执行顺序：初始化后端 → 建图 → 分配 → 写入输入 → 执行 → 读取结果。
+    - 维度与生命周期：理解 ne[] 的含义，以及 model.buf、调度器和后端分别管理什么资源。
+*/
 int main(void) {
     ggml_time_init();
 
@@ -147,7 +169,9 @@ int main(void) {
 
     // release backend memory and free backend
     ggml_backend_sched_free(model.sched);
+    if (model.cpu_backend != model.backend) {
+        ggml_backend_free(model.cpu_backend);
+    }
     ggml_backend_free(model.backend);
-    ggml_backend_free(model.cpu_backend);
     return 0;
 }

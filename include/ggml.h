@@ -681,39 +681,84 @@ extern "C" {
         bool   no_alloc;   // don't allocate memory for the tensor data
     };
 
+    /*
+    C = ggml_add(ctx, A, B);
+
+                     ggml_tensor C
+        ┌────────────────────────────┐
+        │ type = F32                 │
+        │                            │
+        │ ne[] = shape              │
+        │ nb[] = stride             │
+        │                            │
+        │ op = GGML_OP_ADD           │
+        │                            │
+        │ src[0] ────────────────────┼──────► A
+        │ src[1] ────────────────────┼──────► B
+        │                            │
+        │ op_params[]                │
+        │                            │
+        │ buffer ────────────┐       │
+        │ data   ────────┐   │       │
+        │                │   │       │
+        │ view_src       │   │       │
+        │ view_offs      │   │       │
+        │                │   │       │
+        │ name           │   │       │
+        │ extra          │   │       │
+        └────────────────┼───┼───────┘
+                         │   │
+                         │   ▼
+                         │ backend buffer
+                         │
+                         ▼
+                    Tensor 数据
+        ggml_tensor = 一个“数据/中间结果 + 计算节点”的描述对象。
+        ggml_cgraph = 把很多 ggml_tensor 按依赖关系组织起来的一张计算图。
+        一个 ggml_tensor 可以表示输入/权重/bias tensor，还可以表示 A+B/A*B/矩阵乘法/Relu/Reshape 的结果
+    */
     // n-dimensional tensor
     struct ggml_tensor {
-        enum ggml_type type;
+        enum ggml_type type;       // Tensor 的数据类型，Tensor 中元素的存储格式
 
-        struct ggml_backend_buffer * buffer;
-
-        int64_t ne[GGML_MAX_DIMS]; // number of elements
-        size_t  nb[GGML_MAX_DIMS]; // stride in bytes:
+        struct ggml_backend_buffer * buffer;    // Tensor 的数据到底由谁管理 （cpu RAM / CUDA VRAM / Metal Buffer)
+        // ne[0] = 4, ne[1] = 3, 3 行 4 列
+        int64_t ne[GGML_MAX_DIMS]; // number of elements， tensor 的 shape, ne[0] 通常对应内存中最连续的那个维度，单位是元素个数
+        
+        /*
+        block 数量 = ne[0] / block_size, 
+        */
+        size_t  nb[GGML_MAX_DIMS]; // stride in bytes: 单位是字节
                                    // nb[0] = ggml_type_size(type)
                                    // nb[1] = nb[0]   * (ne[0] / ggml_blck_size(type)) + padding
                                    // nb[i] = nb[i-1] * ne[i-1]
+        
+        // compute data 描述计算
+        enum ggml_op op;           // 算子的类型
 
-        // compute data
-        enum ggml_op op;
+        
 
         // op params - allocated as int32_t for alignment
-        int32_t op_params[GGML_MAX_OP_PARAMS / sizeof(int32_t)];
+        int32_t op_params[GGML_MAX_OP_PARAMS / sizeof(int32_t)];    // 算子的额外参数
+        
+        int32_t flags;             // 位标志，可以用于表示(input/outupt/param/loss/...)
 
-        int32_t flags;
+        struct ggml_tensor * src[GGML_MAX_SRC]; // 当前 Tensor 是由哪些 Tensor 计算出来的。
 
-        struct ggml_tensor * src[GGML_MAX_SRC];
-
-        // source tensor and offset for views
+        // source tensor and offset for views 描述 View / 内存关系  
+        // view: 创建一个新的 Tensor 描述，但是不重新分配数据，而是共享另一个 Tensor 的底层内存。
+        // (尽量改变 metadata，而不是移动真正的数据。)
         struct ggml_tensor * view_src;
         size_t               view_offs;
 
-        void * data;
-
-        char name[GGML_MAX_NAME];
+        // 辅助信息  
+        void * data;               // 执行真正的数据
+        
+        char name[GGML_MAX_NAME];  // tensor 的名称，用于调试和日志
 
         void * extra; // extra things e.g. for ggml-cuda.cu
 
-        char padding[8];
+        char padding[8];           // 跟结构体布局/内存对其/ABI 等有关
     };
 
     static const size_t GGML_TENSOR_SIZE = sizeof(struct ggml_tensor);

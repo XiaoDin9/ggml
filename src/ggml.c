@@ -956,13 +956,11 @@ const struct ggml_type_traits * ggml_get_type_traits(enum ggml_type type) {
 //
 
 struct ggml_object {
-    size_t offs;
-    size_t size;
+    size_t offs;                // 内容区相对 mem_buffer 的偏移
+    size_t size;                // 内容区大小，包含对齐填充
 
-    struct ggml_object * next;
-
-    enum ggml_object_type type;
-
+    struct ggml_object * next;  // 下一个对象的管理头
+    enum ggml_object_type type; // 调用者指定的对象类别
     char padding[4];
 };
 
@@ -973,15 +971,15 @@ static const size_t GGML_OBJECT_SIZE = sizeof(struct ggml_object);
 //
 
 struct ggml_context {
-    size_t mem_size;
-    void * mem_buffer;
+    size_t mem_size;            // 内存池总容量
+    void * mem_buffer;          // 内存池起点
     bool   mem_buffer_owned;
     bool   no_alloc;
 
     int    n_objects;
 
-    struct ggml_object * objects_begin;
-    struct ggml_object * objects_end;
+    struct ggml_object * objects_begin;     // 第一个对象的管理头
+    struct ggml_object * objects_end;       // 最后一个对象的管理头
 };
 
 //
@@ -1463,11 +1461,15 @@ enum ggml_type ggml_ftype_to_ggml_type(enum ggml_ftype ftype) {
     return wtype;
 }
 
+// 创建一个张量所需的固定管理内存大小，单位是字节，不包含张量的数值数据。
 size_t ggml_tensor_overhead(void) {
+    // 张量固定开销 = 对象管理头大小 + 张量描述结构大小
+    // sizeof(struct ggml_object) + sizeof(struct ggml_tensor)
     return GGML_OBJECT_SIZE + GGML_TENSOR_SIZE;
 }
 
 bool ggml_is_transposed(const struct ggml_tensor * tensor) {
+    // 正常连续 F32 矩阵通常是, nb[0] = 4, nb[1] = 一行的字节数, 转置后, nb[0] > nb[1]
     return tensor->nb[0] > tensor->nb[1];
 }
 
@@ -1485,7 +1487,7 @@ static bool ggml_is_contiguous_m_n(const struct ggml_tensor * tensor, int m, int
             next_nb *= tensor->ne[i];
         } else {
             // this dimension does not need to be contiguous
-            next_nb = tensor->ne[i]*tensor->nb[i];
+            next_nb = tensor->ne[i] * tensor->nb[i];
         }
     }
     return true;
@@ -1611,7 +1613,7 @@ static inline bool ggml_can_repeat_rows(const struct ggml_tensor * t0, const str
 struct ggml_context * ggml_init(struct ggml_init_params params) {
     static bool is_first_call = true;
 
-    ggml_critical_section_start();
+    ggml_critical_section_start();          // 加全局锁
 
     if (is_first_call) {
         // initialize time system (required on Windows)
@@ -1620,7 +1622,7 @@ struct ggml_context * ggml_init(struct ggml_init_params params) {
         is_first_call = false;
     }
 
-    ggml_critical_section_end();
+    ggml_critical_section_end();            // 解全局锁
 
     struct ggml_context * ctx = GGML_MALLOC(sizeof(struct ggml_context));
 
@@ -1642,11 +1644,8 @@ struct ggml_context * ggml_init(struct ggml_init_params params) {
     };
 
     GGML_ASSERT(ctx->mem_buffer != NULL);
-
     GGML_ASSERT_ALIGNED(ctx->mem_buffer);
-
     GGML_PRINT_DEBUG("%s: context initialized\n", __func__);
-
     return ctx;
 }
 
@@ -1704,19 +1703,36 @@ size_t ggml_get_max_tensor_size(const struct ggml_context * ctx) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
+// 在 ctx 已有的内存池末尾划出一块空间，写入对象管理头，并把它接入 context 的对象链表。
 static struct ggml_object * ggml_new_object(struct ggml_context * ctx, enum ggml_object_type type, size_t size) {
     // always insert objects at the end of the context's memory pool
-    struct ggml_object * obj_cur = ctx->objects_end;
+    
+    // 找到当前已使用区域的末尾, 
+    // offs 指向上一个对象的内容，size 包含内容末尾的对齐填充，两者相加就是下一个对象管理头的位置。
+    /*
+        低地址 → 高地址
+    ┌──────────────┬───────────────┬──────────────────────┬──────────┐
+    │ 已有对象们    │ 新对象管理头   │ 新对象内容 + 对齐填充  │ 空闲空间  │
+    └──────────────┴───────────────┴──────────────────────┴──────────┘
+                   ↑               ↑                      ↑
+                cur_end        cur_end + H       cur_end + H + size_needed
+                                   │
+                               obj_new->offs
 
+                    │←── H 字节 ──→│←── size_needed 字节 ─→│
+    管理头地址 = mem_buffer + cur_end;        // obj_new
+    内容区地址 = mem_buffer + obj_new->offs;
+    */
+    struct ggml_object * obj_cur = ctx->objects_end;
     const size_t cur_offs = obj_cur == NULL ? 0 : obj_cur->offs;
     const size_t cur_size = obj_cur == NULL ? 0 : obj_cur->size;
     const size_t cur_end  = cur_offs + cur_size;
 
-    // align to GGML_MEM_ALIGN
+    // align to GGML_MEM_ALIGN, 对齐申请大小，并检查容量
     GGML_ASSERT(size <= SIZE_MAX - (GGML_MEM_ALIGN - 1));
     size_t size_needed = GGML_PAD(size, GGML_MEM_ALIGN);
 
+    // 在内存池中写入管理头
     char * const mem_buffer = ctx->mem_buffer;
     struct ggml_object * const obj_new = (struct ggml_object *)(mem_buffer + cur_end);
 
@@ -1731,6 +1747,7 @@ static struct ggml_object * ggml_new_object(struct ggml_context * ctx, enum ggml
         return NULL;
     }
 
+    // 接着检查内存池容量， 检查关系：已用字节数 + 新管理头大小 + 新内容区大小 ≤ 内存池总容量
     if (cur_end + size_needed + GGML_OBJECT_SIZE > ctx->mem_size) {
         GGML_LOG_WARN("%s: not enough space in the context's memory pool (needed %zu, available %zu)\n",
                 __func__, cur_end + size_needed + GGML_OBJECT_SIZE, ctx->mem_size);
@@ -1740,6 +1757,7 @@ static struct ggml_object * ggml_new_object(struct ggml_context * ctx, enum ggml
         return NULL;
     }
 
+    // 写入新对象的管理头
     *obj_new = (struct ggml_object) {
         .offs = cur_end + GGML_OBJECT_SIZE,
         .size = size_needed,
@@ -1747,8 +1765,10 @@ static struct ggml_object * ggml_new_object(struct ggml_context * ctx, enum ggml
         .type = type,
     };
 
+    // 验证内容地址确实满足对齐要求
     GGML_ASSERT_ALIGNED(mem_buffer + obj_new->offs);
 
+    // 接入对象链表，更新尾指针，最后总是把 objects_end 更新为新对象
     if (obj_cur != NULL) {
         obj_cur->next = obj_new;
     } else {
@@ -1756,10 +1776,8 @@ static struct ggml_object * ggml_new_object(struct ggml_context * ctx, enum ggml
         ctx->objects_begin = obj_new;
     }
 
-    ctx->objects_end = obj_new;
-
+    ctx->objects_end = obj_new;         // 更新尾对象
     //printf("%s: inserted new object at %zu, size = %zu\n", __func__, cur_end, obj_new->size);
-
     return obj_new;
 }
 
@@ -3333,6 +3351,8 @@ bool ggml_prec_set_src(
 static inline bool ggml_can_mul_mat(const struct ggml_tensor * t0, const struct ggml_tensor * t1) {
     static_assert(GGML_MAX_DIMS == 4, "GGML_MAX_DIMS is not 4 - update this function");
 
+    // t0->ne[0] == t1->ne[0], 要求两个输入的最内层维度相等。这个维度是点积时需要遍历和累加的维度，通常记为 K, 即: a 和 b 的每一行都有 K 个元素
+    // 后两个条件检查第 2、3 维是否允许把 t0 广播到 t1，后面再展开
     return (t0->ne[0]           == t1->ne[0])  &&
            (t1->ne[2]%t0->ne[2] == 0)          && // verify t0 is broadcastable
            (t1->ne[3]%t0->ne[3] == 0);
@@ -3345,6 +3365,11 @@ struct ggml_tensor * ggml_mul_mat(
     GGML_ASSERT(ggml_can_mul_mat(a, b));
     GGML_ASSERT(!ggml_is_transposed(a));
 
+    /*
+    a->ne = [K, N, 1, 1]
+    b->ne = [K, M, 1, 1]
+    result->ne = [N, M, 1, 1]
+    */
     const int64_t ne[4] = { a->ne[1], b->ne[1], b->ne[2], b->ne[3] };
     struct ggml_tensor * result = ggml_new_tensor(ctx, GGML_TYPE_F32, 4, ne);
 
@@ -6628,6 +6653,8 @@ void ggml_hash_set_free(struct ggml_hash_set * hash_set) {
     GGML_FREE(hash_set->keys);
 }
 
+// 根据最小容量 min_sz，选择哈希表的实际容量，返回值表示槽位数量。 它保证返回值 >= min_sz
+// 通过二分查找，找到表中第一个 >= min_sz 的质数
 size_t ggml_hash_size(size_t min_sz) {
     // next primes after powers of two
     static const size_t primes[] = {
@@ -6650,7 +6677,10 @@ size_t ggml_hash_size(size_t min_sz) {
             r = m;
         }
     }
-    size_t sz = l < n_primes ? primes[l] : min_sz | 1;
+
+    // min_sz 超过表中最大值，返回 min_sz | 1，把最低位设为 1：
+    // 偶数 -> 加1， 奇数 -> 保持原值
+    size_t sz = l < n_primes ? primes[l] : min_sz | 1; 
     return sz;
 }
 
@@ -7448,25 +7478,46 @@ static void * incr_ptr_aligned(void ** p, size_t size, size_t align) {
     return ptr;
 }
 
+// 计算创建一个指定容量的计算图，需要多少字节的管理内存，包括各部分的对齐填充。
+// 计算图 struct ggml_cgraph 及其配套数组计算所需内存
 static size_t ggml_graph_nbytes(size_t size, bool grads) {
-    size_t hash_size = ggml_hash_size(size * 2);
+    size_t hash_size = ggml_hash_size(size * 2);            // 乘 2 是为了同时容纳计算节点和叶子节点
+
+    // 把 p 当作一个游标， 每次调用，都会先把游标向上对齐，再增加对应字节数，所以数组之间的填充也会计入结果
+    // p 的值是1024
     void * p = (char *) 1024; // workaround for ubsan error "applying non-zero offset X to null pointer"
+    
+    // ggml_cgraph 本体
     incr_ptr_aligned(&p, sizeof(struct ggml_cgraph), 1);
+    
+    // nodes 指针数组， size × 指针大小
     incr_ptr_aligned(&p, size * sizeof(struct ggml_tensor *), sizeof(struct ggml_tensor *)); // nodes
+    
+    // leafs 指针数组， size × 指针大小
     incr_ptr_aligned(&p, size * sizeof(struct ggml_tensor *), sizeof(struct ggml_tensor *)); // leafs
+    
+    // use_counts 使用次数数组，hash_size × sizeof(int32_t)
     incr_ptr_aligned(&p, hash_size * sizeof(int32_t), sizeof(int32_t)); // use_counts
+    
+    // 哈希表 keys 指针数组， hash_size × 指针大小
     incr_ptr_aligned(&p, hash_size * sizeof(struct ggml_tensor *), sizeof(struct ggml_tensor *)); // hash keys
     if (grads) {
+        // grads， hash_size × 指针大小
         incr_ptr_aligned(&p, hash_size * sizeof(struct ggml_tensor *), sizeof(struct ggml_tensor *)); // grads
+        
+        // grad_accs hash_size × 指针大小
         incr_ptr_aligned(&p, hash_size * sizeof(struct ggml_tensor *), sizeof(struct ggml_tensor *)); // grad_accs
     }
+
+    // 希槽位占用位图 used
     incr_ptr_aligned(&p, ggml_bitset_size(hash_size) * sizeof(ggml_bitset_t), sizeof(ggml_bitset_t));
 
     size_t nbytes = (size_t) p;
-    return nbytes - 1024;
+    return nbytes - 1024;        // 就得到所需的内存跨度：
 }
 
 size_t ggml_graph_overhead_custom(size_t size, bool grads) {
+    // 对象管理头 + 计算图 struct ggml_cgraph 及其配套数组计算所需内存，进行对齐
     return GGML_OBJECT_SIZE + GGML_PAD(ggml_graph_nbytes(size, grads), GGML_MEM_ALIGN);
 }
 
@@ -7475,7 +7526,10 @@ size_t ggml_graph_overhead(void) {
 }
 
 struct ggml_cgraph * ggml_new_graph_custom(struct ggml_context * ctx, size_t size, bool grads) {
+    // 计算创建一个指定容量的计算图，需要多少字节的管理内存，包括各部分的对齐填充。
     const size_t obj_size = ggml_graph_nbytes(size, grads);
+    
+    // 从内存池中划出空间
     struct ggml_object * obj = ggml_new_object(ctx, GGML_OBJECT_TYPE_GRAPH, obj_size);
     struct ggml_cgraph * cgraph = (struct ggml_cgraph *) ((char *) ctx->mem_buffer + obj->offs);
 
@@ -7512,8 +7566,8 @@ struct ggml_cgraph * ggml_new_graph_custom(struct ggml_context * ctx, size_t siz
 
     ggml_hash_set_reset(&cgraph->visited_hash_set);
     if (grads) {
-        memset(cgraph->grads,     0, hash_size*sizeof(struct ggml_tensor *));
-        memset(cgraph->grad_accs, 0, hash_size*sizeof(struct ggml_tensor *));
+        memset(cgraph->grads,     0, hash_size * sizeof(struct ggml_tensor *));
+        memset(cgraph->grad_accs, 0, hash_size * sizeof(struct ggml_tensor *));
     }
 
     return cgraph;

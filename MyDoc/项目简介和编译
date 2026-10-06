@@ -1,0 +1,461 @@
+# ggml 项目简介、目录结构与 Windows 编译指南
+
+本文面向初次阅读 ggml 源码的开发者，以当前本地工程为依据，说明项目定位、目录职责、核心模块，以及 Windows 下的编译、MNIST 运行与调试方法。
+
+- 本地源码目录：`C:\Users\yding\Desktop\dy_ws\01_code\ggml-master`
+- 本地源码版本：`0.25.3`，来自根目录 `CMakeLists.txt` 的版本定义。
+- 配置核对日期：2026-10-02。文中的本地构建状态是查阅时的记录，重新配置后应以 `build/CMakeCache.txt` 为准。
+- 文中命令使用 PowerShell；除明确切换目录的 Python 训练步骤外，均在项目根目录执行。
+
+## 1. 项目简介
+
+ggml 是使用 C/C++ 实现的张量计算库，目标是以较少的依赖提供可移植、高效的机器学习计算能力。它提供张量、算子、计算图、内存管理和计算后端等基础组件，应用代码可以使用这些组件搭建模型并执行推理。
+
+工程也包含自动微分、优化器和训练示例。当前 MNIST 示例的 README 明确说明：训练功能仍在开发中，尚未达到生产就绪状态。
+
+主要能力包括：
+
+- 张量计算：矩阵乘法、卷积、激活、归一化、注意力相关运算等。
+- 计算图：描述算子之间的依赖关系，并交给计算后端执行。
+- 多种数据类型与量化格式：降低模型存储和部分计算的成本。
+- 内存规划与复用：为计算图安排张量数据的存储空间。
+- 多硬件后端：CPU、GPU、专用加速设备，以及远程计算等。
+- 模型文件支持：通过 GGUF 保存和读取元数据与张量。
+
+ggml 提供计算基础设施，具体模型的结构、权重加载和应用流程通常由使用者编写。本工程的 `examples/` 就展示了这部分工作。
+
+## 2. 阅读源码前需要理解的概念
+
+| 概念 | 含义 | 主要接口 |
+|---|---|---|
+| 张量 Tensor | 保存数据类型、维度、步长、数据位置和算子来源等信息的对象 | `ggml_tensor` |
+| 上下文 Context | 管理张量、计算图等对象的内存；张量数据也可以单独交给后端分配 | `ggml_context`、`ggml_init()` |
+| 算子 Operation | 矩阵乘法、加法、卷积等运算的描述 | `ggml_mul_mat()`、`ggml_add()` 等 |
+| 计算图 Graph | 将算子及其依赖组织起来，表示需要执行的计算 | `ggml_cgraph`、`ggml_build_forward_expand()` |
+| 后端 Backend | 在具体设备上执行计算，并管理设备缓冲区和数据传输 | `ggml_backend_t` |
+| 调度器 Scheduler | 根据设备能力等条件安排计算图节点，并处理不同后端之间的数据传输 | `ggml_backend_sched_t` |
+| GGUF | 保存模型元数据、张量描述及张量数据的文件格式 | `gguf.h` |
+
+例如，调用 `ggml_mul_mat(ctx, a, b)` 通常是在创建矩阵乘法节点，并不会立即完成矩阵乘法。后续需要构建计算图、准备数据和内存，再调用后端或调度器执行。
+
+典型流程：
+
+```text
+初始化后端和上下文
+    ↓
+创建张量，描述模型运算
+    ↓
+构建计算图
+    ↓
+分配张量数据的内存，写入权重和输入
+    ↓
+由后端或调度器执行计算图
+    ↓
+读取结果，释放相关资源
+```
+
+## 3. 工程整体目录
+
+```text
+ggml-master/
+├── include/          对外公开的头文件
+├── src/              核心实现和各类计算后端
+├── examples/         张量计算、模型推理和训练示例
+├── tests/            算子、后端、量化和训练功能测试
+├── docs/             技术文档
+├── cmake/            CMake 辅助模块和配置模板
+├── ci/               自动构建与测试脚本
+├── scripts/          发布、代码同步等项目维护脚本
+├── build/            本地构建生成的文件和编译产物
+├── MyDoc/            本地项目学习文档
+├── .github/          GitHub 工作流和 PR 模板
+├── .vscode/          VS Code 调试配置
+├── .pi/              编码助手的项目规则配置
+├── CMakeLists.txt    整个工程的构建入口
+├── README.md         项目介绍与快速编译说明
+├── requirements.txt  Python 脚本的依赖声明
+├── CONTRIBUTING.md   贡献说明
+└── LICENSE           MIT 许可证
+```
+
+### 3.1 各目录的职责
+
+| 目录 | 作用 |
+|---|---|
+| `include/` | 应用开发时使用的公共 API，包括核心计算、后端、内存分配、训练和 GGUF 接口 |
+| `src/` | 公共 API 的实现、内部辅助代码，以及不同硬件后端的算子实现 |
+| `examples/` | 展示模型加载、计算图构建、推理和训练；初学者可以从这里进入 |
+| `tests/` | 验证算子结果、后端行为、量化精度与性能，以及优化器等功能 |
+| `docs/` | 当前主要包含 `gguf.md`，解释 GGUF 文件格式 |
+| `cmake/` | 编译参数与平台检测、NCCL 查找、Git 信息获取，以及安装后的 CMake 包配置 |
+| `ci/` | `run.sh` 组织不同配置和后端的构建、测试与结果记录 |
+| `scripts/` | 版本发布、作者列表生成，以及与 `llama.cpp`、`whisper.cpp` 同步代码 |
+| `build/` | CMake 生成的构建文件、中间文件、可执行程序、库和测试记录 |
+| `MyDoc/` | 本地学习资料；本文位于此目录 |
+| `.github/` | `workflows/` 保存自动构建和发布流程；`actions/` 保存复用的工作流组件 |
+| `.vscode/` | 当前包含 `launch.json`，配置 MNIST 评估程序的启动路径、参数和调试器 |
+| `.pi/` | 保存编码助手的规则，例如 `.pi/gg/SYSTEM.md`；不参与计算库编译 |
+
+### 3.2 根目录的重要文件
+
+| 文件 | 作用 |
+|---|---|
+| `CMakeLists.txt` | 定义版本、编译选项、启用的后端，以及是否构建示例和测试 |
+| `README.md` | 项目概述、快速编译入口和文档索引 |
+| `requirements.txt` | Python 示例、模型转换和训练脚本使用的依赖；编译纯 C/C++ 核心库通常不需要安装这些包 |
+| `ggml.pc.in` | 生成供 `pkg-config` 使用的安装信息 |
+| `CONTRIBUTING.md` | 贡献流程和约定 |
+| `AUTHORS`、`LICENSE` | 作者列表和许可证 |
+| `.editorconfig`、`.gitignore`、`.gitmodules` | 编辑格式、版本控制忽略规则和子模块配置 |
+
+## 4. 核心源码与计算后端
+
+### 4.1 公共接口与实现的对应关系
+
+| 接口或实现文件 | 作用 |
+|---|---|
+| `include/ggml.h`、`src/ggml.c` | 张量、上下文、数据类型、算子定义、计算图构建和自动微分等核心功能 |
+| `include/ggml-backend.h`、`src/ggml-backend.cpp` | 后端抽象、缓冲区、数据传输和计算图调度 |
+| `include/ggml-alloc.h`、`src/ggml-alloc.c` | 张量与计算图的内存分配和复用 |
+| `include/ggml-opt.h`、`src/ggml-opt.cpp` | 数据集、损失、优化器、训练与评估结果统计 |
+| `include/gguf.h`、`src/gguf.cpp` | GGUF 文件读写 |
+| `include/ggml-cpp.h` | C++ 辅助封装，例如使用智能指针管理 ggml 对象 |
+| `src/ggml-quants.c`、`src/ggml-quants.h` | 通用量化和反量化实现 |
+| `src/ggml-backend-reg.cpp` | 后端注册、设备发现和后端加载入口 |
+| `src/ggml-backend-dl.cpp`、`src/ggml-backend-dl.h` | 动态库加载相关的平台封装 |
+| `src/ggml-threading.cpp`、`src/ggml-threading.h` | 线程同步等辅助功能 |
+| `src/ggml.cpp` | C++ 异常终止时的回溯等辅助处理 |
+| `src/ggml-impl.h`、`src/ggml-common.h` 等 | 库内部的数据定义、宏和公共辅助代码 |
+
+理解算子时，可以先在 `ggml.h` 查接口，再在 `ggml.c` 查节点如何建立，最后到具体后端查实际计算实现。
+
+### 4.2 计算后端目录
+
+| `src/` 下的目录 | 作用 |
+|---|---|
+| `ggml-cpu/` | CPU 算子、多线程执行、SIMD 优化和量化计算 |
+| `ggml-cuda/` | NVIDIA CUDA 后端及 `.cu` 计算内核 |
+| `ggml-hip/` | AMD HIP/ROCm GPU 后端 |
+| `ggml-metal/` | Apple Metal GPU 后端 |
+| `ggml-vulkan/` | Vulkan GPU 后端 |
+| `ggml-sycl/` | SYCL 后端；本地源码的构建配置面向 Intel 设备 |
+| `ggml-opencl/` | OpenCL 后端 |
+| `ggml-webgpu/` | WebGPU 后端 |
+| `ggml-blas/` | 通过 BLAS 库加速矩阵计算 |
+| `ggml-cann/` | Ascend/CANN 加速后端 |
+| `ggml-musa/` | MUSA 加速后端 |
+| `ggml-hexagon/` | Hexagon 加速后端 |
+| `ggml-openvino/` | 基于 OpenVINO Runtime 的后端 |
+| `ggml-zdnn/` | IBM zDNN/NNPA 加速后端 |
+| `ggml-zendnn/` | AMD ZenDNN 加速后端 |
+| `ggml-et/` | ET 平台加速后端 |
+| `ggml-rpc/` | 通过 RPC 将计算交给远端设备 |
+| `ggml-virtgpu/` | 基于 VirtGPU/Virglrenderer 的计算接口转发 |
+
+目录存在并不代表后端已经启用。参与编译的后端由 CMake 选项决定，例如 `GGML_CPU=ON`、`GGML_CUDA=ON`。
+
+### 4.3 主要后端的内部目录
+
+| 子目录 | 作用 |
+|---|---|
+| `ggml-cpu/arch/` | 按 `x86`、`arm`、`riscv`、`loongarch`、`powerpc`、`s390`、`wasm` 划分的架构优化 |
+| `ggml-cpu/amx/` | Intel AMX 优化代码 |
+| `ggml-cpu/kleidiai/` | KleidiAI 优化库接入 |
+| `ggml-cpu/llamafile/` | llamafile 优化计算代码 |
+| `ggml-cpu/spacemit/` | SpacemiT 平台相关优化 |
+| `ggml-cpu/cmake/` | CPU 特性和依赖检测模块 |
+| `ggml-cuda/template-instances/` | 不同数据类型等组合的模板实例化 |
+| `ggml-cuda/vendors/` | 厂商相关适配代码 |
+| `ggml-vulkan/vulkan-shaders/` | GPU 计算着色器及其构建配置 |
+| `ggml-vulkan/cmake/` | Vulkan 构建辅助模块 |
+| `ggml-hexagon/htp/` | Hexagon HTP 侧计算代码 |
+| `ggml-et/et-kernels/`、`ggml-et/cmake/` | ET 计算内核，以及内核构建和嵌入工具 |
+| `ggml-virtgpu/backend/`、`ggml-virtgpu/include/` | 转发请求的接收执行端，以及相关头文件 |
+
+CPU 后端中，`ops.cpp`、`binary-ops.cpp`、`unary-ops.cpp` 包含算子实现，`vec.cpp` 包含向量运算，`quants.c`、`repack.cpp` 等处理量化计算与数据布局优化。
+
+## 5. 示例工程与 MNIST
+
+### 5.1 示例目录
+
+| `examples/` 下的目录 | 内容 |
+|---|---|
+| `simple/` | 最小矩阵乘法示例：上下文用法和后端用法 |
+| `mnist/` | 手写数字识别，包含全连接网络和卷积网络的训练与评估 |
+| `gpt-2/` | GPT-2 推理、模型转换、量化，以及不同内存和后端使用方式 |
+| `gpt-j/` | GPT-J 推理、转换和量化 |
+| `sam/` | Segment Anything 图像分割 |
+| `yolo/` | YOLO 目标检测 |
+| `magika/` | 基于文件内容的文件类型识别 |
+| `python/` | Python 绑定生成脚本、`ggml/` 辅助模块和基本示例 |
+| `perf-metal/` | Metal 性能测试 |
+| `prompts/` | 文本生成示例使用的提示词文件 |
+| `test-cmake/` | 验证安装后的 ggml 能否被独立 CMake 工程正确使用 |
+
+`examples/` 根目录的 `common.*`、`common-ggml.*` 是示例共享代码；`stb_image.h`、`stb_image_write.h` 用于图像读写。
+
+### 5.2 MNIST 文件结构
+
+```text
+examples/mnist/
+├── mnist-eval.cpp       评估程序入口
+├── mnist-train.cpp      使用 ggml 训练模型的程序入口
+├── mnist-common.cpp     模型加载、网络构建、数据处理和训练评估实现
+├── mnist-common.h       共享结构和函数声明
+├── mnist-train-fc.py    PyTorch 全连接模型训练与 GGUF 导出
+├── mnist-train-cnn.py   TensorFlow/Keras 卷积模型训练与 GGUF 导出
+├── mnist-fc-f32.gguf    当前本地已有的模型文件
+├── data/               MNIST 数据集
+├── web/                浏览器演示资源
+├── server.py           浏览器演示服务脚本
+├── CMakeLists.txt      定义 mnist-common、mnist-eval、mnist-train 等目标
+└── README.md           数据获取、训练和运行说明
+```
+
+MNIST 全连接网络将一张 `28 × 28` 图片展开为 784 个输入值，经过 500 个隐藏单元和 ReLU，再输出 10 个类别的 logits，对应数字 0～9。
+
+`mnist-eval.cpp` 的主要流程：
+
+1. 创建数据集，读取测试图片和标签。
+2. 随机选择并打印一张测试图片。
+3. 根据参数选择后端，从 GGUF 文件加载模型。
+4. 调用 `mnist_model_build()` 构建网络。
+5. 调用 `mnist_model_eval()` 评估测试集。
+6. 输出该图片的预测数字、整体损失和准确率。
+
+模型构建和评估的主要实现位于 `mnist-common.cpp`，因此只阅读 `mnist-eval.cpp` 还不能看到完整网络结构。
+
+```text
+mnist-eval.cpp
+    ↓ 调用模型相关函数
+mnist-common.cpp
+    ↓ 使用张量、算子、GGUF 和训练评估接口
+ggml 核心 / gguf / ggml-opt / 后端调度
+    ↓
+CPU、CUDA 或其他已启用的计算后端
+    ↓
+预测、损失与准确率
+```
+
+## 6. Windows 编译
+
+### 6.1 环境与当前本地配置
+
+需要准备 CMake、可用的 C/C++ 编译器和构建工具。使用 Visual Studio 时，应安装 C++ 开发工具；使用 CUDA 时，还需要 NVIDIA GPU、驱动、CUDA Toolkit，以及相互兼容的编译工具链。
+
+仅编译 C/C++ 程序时不需要 Python。执行 Python 模型转换或训练脚本时，再安装相应依赖。
+
+当前 `build/CMakeCache.txt` 记录：
+
+| 项目 | 当前值 |
+|---|---|
+| CMake 生成器 | `Visual Studio 18 2026` |
+| 构建配置 | `Debug`、`Release`、`MinSizeRel`、`RelWithDebInfo` |
+| `BUILD_SHARED_LIBS` | `ON` |
+| `GGML_CPU` | `ON` |
+| `GGML_CUDA` | `OFF` |
+| `GGML_BUILD_EXAMPLES` | `ON` |
+| `GGML_BUILD_TESTS` | `ON` |
+
+现有目录已包含 `build/bin/Debug/mnist-eval.exe` 和 `simple-backend.exe` 等产物。文件存在说明本地已有编译结果，不能据此判断它们是否对应当前全部源码。
+
+### 6.2 CPU 构建
+
+切换到项目根目录：
+
+```powershell
+Set-Location 'C:\Users\yding\Desktop\dy_ws\01_code\ggml-master'
+```
+
+复用现有 `build/` 配置 CPU、示例和测试：
+
+```powershell
+cmake -S . -B build -DGGML_CPU=ON -DGGML_CUDA=OFF -DGGML_BUILD_EXAMPLES=ON -DGGML_BUILD_TESTS=ON
+```
+
+编译 Debug，便于断点调试：
+
+```powershell
+cmake --build build --config Debug --parallel 8
+```
+
+只编译 MNIST 评估程序及其依赖：
+
+```powershell
+cmake --build build --config Debug --target mnist-eval --parallel 8
+```
+
+编译 Release，用于运行和性能观察：
+
+```powershell
+cmake --build build --config Release --parallel 8
+```
+
+Visual Studio 是多配置生成器，构建时用 `--config` 选择配置；Debug 与 Release 的程序分别位于 `build/bin/Debug/` 和 `build/bin/Release/`。
+
+执行最小示例或测试：
+
+```powershell
+.\build\bin\Debug\simple-backend.exe
+ctest --test-dir build -C Debug --output-on-failure
+```
+
+### 6.3 CUDA 构建
+
+CUDA 构建使用独立的 `build-cuda/` 目录，方便同时保留现有 CPU 构建。准备好兼容的工具链后执行：
+
+```powershell
+cmake -S . -B build-cuda -DGGML_CPU=ON -DGGML_CUDA=ON -DGGML_BUILD_EXAMPLES=ON -DGGML_BUILD_TESTS=ON
+cmake --build build-cuda --config Debug --target mnist-eval --parallel 8
+```
+
+在 Visual Studio 生成器下，程序输出到 `build-cuda/bin/Debug/`。指定 `CUDA0` 运行，还要求该构建包含 CUDA 后端并能发现对应设备。
+
+切换 CMake 生成器或工具链时，使用新的构建目录，避免与旧缓存冲突。若使用 Ninja 等单配置生成器，应在配置阶段指定 `-DCMAKE_BUILD_TYPE=Debug`，输出目录也不采用 Visual Studio 的 Debug/Release 分层。
+
+### 6.4 构建目录和主要产物
+
+| 路径或产物 | 作用 |
+|---|---|
+| `build/bin/Debug/` | Debug 可执行程序、DLL 和 PDB 调试符号 |
+| `ggml-base.dll` | 核心计算图、内存、量化、GGUF 和训练评估等功能 |
+| `ggml.dll` | 后端注册、加载等入口，并关联核心库 |
+| `ggml-cpu.dll` | CPU 后端实现 |
+| `mnist-eval.exe`、`mnist-train.exe` | MNIST 评估与训练程序 |
+| `build/src/`、`build/examples/`、`build/tests/` | 对应目标的构建文件与中间产物 |
+| `build/CMakeFiles/`、`build/.cmake/` | CMake 内部文件和工具接口生成信息 |
+| `build/Testing/` | 测试记录 |
+| `build/x64/`、`build/*.dir/` | Visual Studio 构建中间文件 |
+| `build/CMakeCache.txt` | 编译选项、工具链和依赖路径缓存 |
+| `build/ggml.slnx`、`build/*.vcxproj` | Visual Studio 解决方案与工程文件 |
+
+具体生成的库和文件名会随构建选项及工具链变化。源码修改应在 `include/`、`src/`、`examples/` 等目录中进行，生成文件通常由 CMake 管理。
+
+## 7. MNIST 运行与 VS Code 调试
+
+### 7.1 使用现有模型进行 CPU 评估
+
+已确认本地存在模型文件和下列未压缩测试数据：
+
+```text
+examples/mnist/mnist-fc-f32.gguf
+examples/mnist/data/MNIST/raw/t10k-images-idx3-ubyte
+examples/mnist/data/MNIST/raw/t10k-labels-idx1-ubyte
+```
+
+在项目根目录执行：
+
+```powershell
+.\build\bin\Debug\mnist-eval.exe `
+    .\examples\mnist\mnist-fc-f32.gguf `
+    .\examples\mnist\data\MNIST\raw\t10k-images-idx3-ubyte `
+    .\examples\mnist\data\MNIST\raw\t10k-labels-idx1-ubyte `
+    CPU
+```
+
+参数依次为模型文件、测试图片、测试标签和可选的后端名称。图片和标签应为对应的 IDX 原始文件，不能直接传入 `.gz` 压缩文件。
+
+PowerShell 的续行符是反引号，续行符后不要再添加空格。以上命令会打印一张测试图片、预测数字和测试集统计；准确率以实际运行结果为准。
+
+### 7.2 使用 CUDA 评估
+
+完成第 6.3 节的 CUDA 编译后，使用对应目录中的程序：
+
+```powershell
+.\build-cuda\bin\Debug\mnist-eval.exe `
+    .\examples\mnist\mnist-fc-f32.gguf `
+    .\examples\mnist\data\MNIST\raw\t10k-images-idx3-ubyte `
+    .\examples\mnist\data\MNIST\raw\t10k-labels-idx1-ubyte `
+    CUDA0
+```
+
+### 7.3 VS Code 配置
+
+当前 `.vscode/launch.json` 使用 `cppvsdbg`，启动程序为：
+
+```text
+${workspaceFolder}\build\bin\Debug\mnist-eval.exe
+```
+
+配置中的前三个参数已指向本地模型和测试数据，但第四个参数为 `CUDA0`。当前 `build/` 缓存记录 `GGML_CUDA=OFF`，因此调试时应按所选构建调整：
+
+- 调试现有 CPU 构建：将第四个参数改为 `CPU`。
+- 调试独立 CUDA 构建：将程序路径改为 `${workspaceFolder}\build-cuda\bin\Debug\mnist-eval.exe`，第四个参数使用 `CUDA0`。
+
+这些是配置建议；本文整理时没有修改 `launch.json`。启动调试前需要完成对应目标的编译，现有配置没有设置 `preLaunchTask` 自动构建步骤。
+
+建议依次在以下位置设置断点：
+
+1. `mnist-eval.cpp` 的 `main()`：查看参数和数据加载流程。
+2. `mnist-common.cpp` 的 `mnist_model_init_from_file()`：查看模型元数据和权重加载。
+3. `mnist_model_build()`：查看全连接或卷积网络的算子连接。
+4. `mnist_model_eval()`：查看评估执行和结果统计。
+
+### 7.4 可选：用 Python 训练全连接模型
+
+已有模型时可以直接评估。需要重新训练或获取数据时，可先安装 Python 依赖，再进入示例目录执行训练脚本：
+
+```powershell
+python -m pip install -r requirements.txt
+Push-Location .\examples\mnist
+python .\mnist-train-fc.py mnist-fc-new-f32.gguf
+Pop-Location
+```
+
+根目录的 `requirements.txt` 包含多个示例使用的依赖。全连接脚本直接使用的主要包为 `torch`、`torchvision`、`numpy` 和 `gguf`；按需准备环境时可以只安装相应包。
+
+该脚本通过 PyTorch 训练模型，并将数据下载到执行目录下的 `data/`。使用新输出名可以保留现有 `mnist-fc-f32.gguf`；评估新模型时相应修改模型参数。
+
+### 7.5 可选：使用 ggml 训练
+
+本地也已存在训练图片和标签。先构建训练目标，再执行：
+
+```powershell
+cmake --build build --config Debug --target mnist-train --parallel 8
+.\build\bin\Debug\mnist-train.exe `
+    mnist-fc `
+    .\examples\mnist\mnist-fc-trained-f32.gguf `
+    .\examples\mnist\data\MNIST\raw\train-images-idx3-ubyte `
+    .\examples\mnist\data\MNIST\raw\train-labels-idx1-ubyte `
+    CPU
+```
+
+参数依次为模型结构名称、输出模型文件、训练图片、训练标签和可选的后端名称。示例也支持 `mnist-cnn` 结构；训练功能的适用范围以示例和实际后端支持为准。
+
+## 8. 常见问题
+
+| 现象 | 检查方法 |
+|---|---|
+| 找不到 `mnist-eval.exe` | 确认 `GGML_BUILD_EXAMPLES=ON`、已构建目标，以及 Debug/Release 路径是否一致 |
+| 指定 `CUDA0` 后无法选择后端 | 检查是否使用 CUDA 构建的程序、`GGML_CUDA` 是否启用，以及运行环境能否发现设备 |
+| 无法打开模型或数据 | 核对路径和工作目录；本文命令的工作目录为项目根目录 |
+| 读取到错误的数据 | 确认图片与标签配对，并使用已解压的 IDX 文件 |
+| 缺少 DLL | 保留同一构建配置下的配套 DLL，通常与 EXE 一起位于 `bin/Debug/` 或 `bin/Release/` |
+| 断点不命中 | 使用 Debug 编译，并确认 EXE、DLL、PDB 与当前源码对应 |
+| CMake 报生成器不一致 | 检查构建目录的缓存，换工具链时使用新的构建目录 |
+| 性能比预期低 | 使用 Release 构建，并查看实际选择的后端；Debug 结果不适合作为最终性能结论 |
+
+## 9. 推荐源码阅读路线
+
+1. **先看最小例子**：`examples/simple/simple-backend.cpp`，理解张量、图、内存和后端。
+2. **再看应用入口**：`examples/mnist/mnist-eval.cpp`，理解模型评估流程。
+3. **进入模型实现**：`examples/mnist/mnist-common.cpp` 和 `.h`，查看权重、网络结构和训练评估调用。
+4. **查询公共接口**：`include/ggml.h`、`ggml-backend.h`、`ggml-alloc.h`、`ggml-opt.h`。
+5. **追踪核心实现**：`src/ggml.c`、`ggml-backend.cpp`、`ggml-alloc.c`、`ggml-opt.cpp`。
+6. **深入单个算子**：选择矩阵乘法或加法，到 `src/ggml-cpu/` 或已启用的 GPU 后端中查执行实现。
+7. **结合测试理解边界**：阅读 `tests/test-backend-ops.cpp`、`test-quantize-fns.cpp`、`test-opt.cpp`。
+
+## 10. 本地参考文件
+
+- [项目 README](../README.md)
+- [根目录构建配置](../CMakeLists.txt)
+- [核心库和后端构建配置](../src/CMakeLists.txt)
+- [核心公共接口](../include/ggml.h)
+- [后端公共接口](../include/ggml-backend.h)
+- [MNIST 使用说明](../examples/mnist/README.md)
+- [MNIST 评估入口](../examples/mnist/mnist-eval.cpp)
+- [MNIST 共享实现](../examples/mnist/mnist-common.cpp)
+- [GGUF 格式说明](../docs/gguf.md)
+- [VS Code 调试配置](../.vscode/launch.json)
+
+本文按本地源码、构建缓存和文件存在情况整理。文中的编译、测试、训练及推理命令是操作指南，文档整理过程中未执行这些命令。

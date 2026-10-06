@@ -787,10 +787,10 @@ struct ggml_backend_sched {
     bool is_reset; // true if the scheduler has been reset since the last graph split
     bool is_alloc;
 
-    int n_backends;
+    int n_backends; // 后端数量
 
-    ggml_backend_t backends[GGML_SCHED_MAX_BACKENDS];
-    ggml_backend_buffer_type_t bufts[GGML_SCHED_MAX_BACKENDS];
+    ggml_backend_t backends[GGML_SCHED_MAX_BACKENDS];               // 已创建的后端列表，靠前的优先级更高，最后必须是 CPU
+    ggml_backend_buffer_type_t bufts[GGML_SCHED_MAX_BACKENDS];      // 各后端使用的缓冲区类型；传 nullptr 使用默认类型
     ggml_gallocr_t galloc;
 
     // hash map of the nodes in the graph
@@ -798,7 +798,7 @@ struct ggml_backend_sched {
     int                 * hv_tensor_backend_ids; // [hash_set.size]
     struct ggml_tensor ** hv_tensor_copies;      // [hash_set.size][n_backends][n_copies]
 
-    int * node_backend_ids; // [graph_size]
+    int * node_backend_ids; // [graph_size]     // graph_size: 调度器容量参数，用于确定哈希表、数组和临时空间大小
     int * leaf_backend_ids; // [graph_size]
 
     int * prev_node_backend_ids; // [graph_size]
@@ -1845,6 +1845,21 @@ static enum ggml_status ggml_backend_sched_compute_splits(ggml_backend_sched_t s
     return GGML_STATUS_SUCCESS;
 }
 
+// 主要是创建并初始化一个后端调度器，把已经创建好的 CPU、GPU 等后端组织起来，为后续执行计算图做好准备。
+/*
+调度器后续负责三个核心问题：
+    - 在哪算：决定每个算子交给哪个后端执行。
+    - 内存怎么分配：为计算图中的张量分配后端缓冲区。
+    - 数据怎么传递：需要跨后端计算时，安排张量复制和同步。
+这个 new() 函数完成的是初始化阶段，实际处理计算图发生在后续调用中。
+Params 解释：
+    backends	已创建的后端列表，靠前的优先级更高，最后必须是 CPU
+    bufts	    各后端使用的缓冲区类型；传 nullptr 使用默认类型
+    n_backends	后端数量
+    graph_size	调度器容量参数，用于确定哈希表、数组和临时空间大小
+    parallel	是否准备流水线并行资源；当前默认配置下开启时使用 4 个副本槽位
+    op_offload	是否允许符合条件的、权重位于 CPU 内存的算子交给 GPU 等高优先级后端执行
+*/
 ggml_backend_sched_t ggml_backend_sched_new(
         ggml_backend_t * backends,
         ggml_backend_buffer_type_t * bufts,
@@ -1852,9 +1867,11 @@ ggml_backend_sched_t ggml_backend_sched_new(
         size_t graph_size,
         bool parallel,
         bool op_offload) {
+
+    // 要求后端数量有效，且最后一个后端必须是 CPU，用于兜底。数组中越靠前的后端优先级越高，例如 { GPU, CPU }。
     GGML_ASSERT(n_backends > 0);
-    GGML_ASSERT(n_backends <= GGML_SCHED_MAX_BACKENDS);
-    GGML_ASSERT(ggml_backend_dev_type(ggml_backend_get_device(backends[n_backends - 1])) == GGML_BACKEND_DEVICE_TYPE_CPU);
+    GGML_ASSERT(n_backends <= GGML_SCHED_MAX_BACKENDS);     // 保证后端的数量有效
+    GGML_ASSERT(ggml_backend_dev_type(ggml_backend_get_device(backends[n_backends - 1])) == GGML_BACKEND_DEVICE_TYPE_CPU);  // 最后一个后端是 CPU
 
     struct ggml_backend_sched * sched = (ggml_backend_sched *) calloc(1, sizeof(struct ggml_backend_sched));
 
@@ -1873,10 +1890,20 @@ ggml_backend_sched_t ggml_backend_sched_new(
 
     // initialize hash table
     // FIXME: needs to be size*2 to account for leafs (do it in graph_split instead)
+    /*
+    建立“张量 → 后端、副本” 的记录表
+    这里就用到了你前面看的 ggml_hash_size()。每个张量通过哈希槽位关联：
+        - hv_tensor_backend_ids：张量分配到的后端编号。
+        - hv_tensor_copies：张量在不同后端、不同流水线轮次中的副本。
+    */
     sched->hash_set    = ggml_hash_set_new(graph_size);
     sched->hv_tensor_backend_ids = (int *) malloc(sched->hash_set.size * sizeof(sched->hv_tensor_backend_ids[0]));
     sched->hv_tensor_copies      = (ggml_tensor **) malloc(sched->hash_set.size * sched->n_backends * sched->n_copies * sizeof(struct ggml_tensor *));
 
+    /*
+    分配调度所需的管理空间
+        包括节点和叶子的后端编号数组、图切分信息 splits、图输入列表，以及存放临时张量和图描述的 context_buffer。
+    */
     const size_t ggml_sched_max_splits = graph_size; // at most there is one split for each node in the graph
     const size_t nodes_size = graph_size + ggml_sched_max_splits*GGML_SCHED_MAX_SPLIT_INPUTS*2;
     sched->node_backend_ids = (int *) calloc(nodes_size, sizeof(sched->node_backend_ids[0]));
@@ -1897,6 +1924,10 @@ ggml_backend_sched_t ggml_backend_sched_new(
     sched->graph_inputs_capacity = GGML_SCHED_MAX_SPLIT_INPUTS;
     sched->graph_inputs = (struct ggml_tensor **) calloc(sched->graph_inputs_capacity, sizeof(struct ggml_tensor *));
 
+    /*
+    准备缓冲区类型和流水线同步资源
+    每个后端使用指定的 buft，或者该后端的默认缓冲区类型。开启 parallel 时，会准备多个副本槽位和同步事件，支持流水线执行。
+    */
     for (int b = 0; b < n_backends; b++) {
         sched->backends[b] = backends[b];
         sched->bufts[b] = bufts ? bufts[b] : ggml_backend_get_default_buffer_type(backends[b]);
@@ -1909,6 +1940,7 @@ ggml_backend_sched_t ggml_backend_sched_new(
         }
     }
 
+    // 创建图内存分配器并重置状态
     sched->galloc = ggml_gallocr_new_n(sched->bufts, n_backends);
     sched->op_offload = op_offload;
 
