@@ -1,0 +1,9 @@
+C:\Users\yding\Desktop\dy_ws\ggml\src\ggml.c;C:\Users\yding\Desktop\dy_ws\ggml\build_gpu\src\ggml-base.dir\Debug\ggml.c.obj
+C:\Users\yding\Desktop\dy_ws\ggml\src\ggml.cpp;C:\Users\yding\Desktop\dy_ws\ggml\build_gpu\src\ggml-base.dir\Debug\ggml.cpp.obj
+C:\Users\yding\Desktop\dy_ws\ggml\src\ggml-alloc.c;C:\Users\yding\Desktop\dy_ws\ggml\build_gpu\src\ggml-base.dir\Debug\ggml-alloc.obj
+C:\Users\yding\Desktop\dy_ws\ggml\src\ggml-backend.cpp;C:\Users\yding\Desktop\dy_ws\ggml\build_gpu\src\ggml-base.dir\Debug\ggml-backend.obj
+C:\Users\yding\Desktop\dy_ws\ggml\src\ggml-backend-meta.cpp;C:\Users\yding\Desktop\dy_ws\ggml\build_gpu\src\ggml-base.dir\Debug\ggml-backend-meta.obj
+C:\Users\yding\Desktop\dy_ws\ggml\src\ggml-opt.cpp;C:\Users\yding\Desktop\dy_ws\ggml\build_gpu\src\ggml-base.dir\Debug\ggml-opt.obj
+C:\Users\yding\Desktop\dy_ws\ggml\src\ggml-threading.cpp;C:\Users\yding\Desktop\dy_ws\ggml\build_gpu\src\ggml-base.dir\Debug\ggml-threading.obj
+C:\Users\yding\Desktop\dy_ws\ggml\src\ggml-quants.c;C:\Users\yding\Desktop\dy_ws\ggml\build_gpu\src\ggml-base.dir\Debug\ggml-quants.obj
+C:\Users\yding\Desktop\dy_ws\ggml\src\gguf.cpp;C:\Users\yding\Desktop\dy_ws\ggml\build_gpu\src\ggml-base.dir\Debug\gguf.obj

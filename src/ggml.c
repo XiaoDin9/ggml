@@ -7263,18 +7263,26 @@ static void ggml_compute_backward(
     GGML_ASSERT(!src2_needs_grads || ggml_are_same_shape(src2, cgraph->grads[isrc2]));
 }
 
+// 从张量 node 出发，递归访问它的输入依赖，把这些张量加入计算图，并保证依赖节点排在使用它们的节点之前。
+// 它同时负责去重、设置计算标记、统计张量被引用的次数。这个函数是在构建计算图，实际数值运算由后端执行接口完成。
+// 返回的是哈希表下标，不是 cgraph->nodes[] 下标。 后面会用它访问 use_counts[] 等按哈希槽位组织的数组
 static size_t ggml_visit_parents_graph(struct ggml_cgraph * cgraph, struct ggml_tensor * node, bool compute) {
     if (node->op != GGML_OP_NONE && compute) {
         node->flags |= GGML_TENSOR_FLAG_COMPUTE;
     }
 
+    // 已存在：返回该张量所在的槽位。
+    // 尚不存在：返回可以插入的空槽位。
+    // 表满且找不到：触发断言。
     const size_t node_hash_pos = ggml_hash_find(&cgraph->visited_hash_set, node);
     GGML_ASSERT(node_hash_pos != GGML_HASHSET_FULL);
 
+    // ggml_hash_find() 已经处理了哈希冲突和指针匹配，因此返回槽位被占用时，说明当前张量已访问过，不需要再次加入 nodes[] 或 leafs[]。
     if (ggml_bitset_get(cgraph->visited_hash_set.used, node_hash_pos)) {
-        // already visited
-
-        if (compute) {
+        // already visited， 这个张量已经访问过，不需要再次加入 nodes[] 或 leafs[]。
+        // 第一次访问：compute = false → 已加入图，但没有设置计算标记
+        // 第二次访问：compute = true  → 需要补上自己和依赖的计算标记
+        if (compute) {  
             // update the compute flag regardless
             for (int i = 0; i < GGML_MAX_SRC; ++i) {
                 struct ggml_tensor * src = node->src[i];
@@ -7287,27 +7295,42 @@ static size_t ggml_visit_parents_graph(struct ggml_cgraph * cgraph, struct ggml_
         return node_hash_pos;
     }
 
-    // This is the first time we see this node in the current graph.
+    // This is the first time we see this node in the current graph. 首次访问时，登记到哈希集合
+    /*
+        keys[槽位]       = 当前张量指针
+        used 的对应位   = 1，表示槽位已占用
+        use_counts[槽位] = 0，初始化引用次数
+        visited_hash_set 同时记录运算节点和叶子张量。它按张量对象的地址去重，即使两个张量的数据相同，只要对象地址不同，也会分别登记。
+    */
     cgraph->visited_hash_set.keys[node_hash_pos] = node;
     ggml_bitset_set(cgraph->visited_hash_set.used, node_hash_pos);
     cgraph->use_counts[node_hash_pos] = 0;
 
+    // 递归访问所有输入依赖，并统计引用次数
     for (int i = 0; i < GGML_MAX_SRC; ++i) {
+        // cgraph->order 决定先访问哪个输入, LEFT_TO_RIGHT: 从 src[0] 向后，RIGHT_TO_LEFT: 从最后一个 src 向前
+        // 其他值，默认从 src[0] 向后，无论采用哪个方向，都会先处理依赖，再把当前节点加入图
         const int k =
             (cgraph->order == GGML_CGRAPH_EVAL_ORDER_LEFT_TO_RIGHT) ? i :
             (cgraph->order == GGML_CGRAPH_EVAL_ORDER_RIGHT_TO_LEFT) ? (GGML_MAX_SRC-1-i) :
             /* unknown order, just fall back to using i */ i;
 
-        struct ggml_tensor * src = node->src[k];
+        struct ggml_tensor * src = node->src[k];    // 保存当前操作的输入
         if (src) {
             const size_t src_hash_pos = ggml_visit_parents_graph(cgraph, src, compute);
 
             // Update the use count for this operand.
-            cgraph->use_counts[src_hash_pos]++;
+            cgraph->use_counts[src_hash_pos]++;     // 当前节点使用了这个输入一次， 它统计的是输入引用次数
         }
     }
 
-    if (node->op == GGML_OP_NONE && !(node->flags & GGML_TENSOR_FLAG_PARAM)) {
+    /*
+    这里有两个细节：
+        - 叶子张量可以是外部输入。 比如示例中的矩阵 a、b，并不意味着其数值永远不能改变。
+        - 可训练参数即使 op == GGML_OP_NONE，也会进入 nodes[]，以便参与梯度相关处理。
+    加入之前会检查数组容量。如果张量还没有名字，就自动命名为 leaf_0、node_0 等；已有名字会保留。
+    */
+    if (node->op == GGML_OP_NONE && !(node->flags & GGML_TENSOR_FLAG_PARAM)) {      // 加入 leafs[], 没有运算操作，并且不是可训练参数
         // reached a leaf node, not part of the gradient graph (e.g. a constant)
         GGML_ASSERT(cgraph->n_leafs < cgraph->size);
 
@@ -7317,7 +7340,7 @@ static size_t ggml_visit_parents_graph(struct ggml_cgraph * cgraph, struct ggml_
 
         cgraph->leafs[cgraph->n_leafs] = node;
         cgraph->n_leafs++;
-    } else {
+    } else {  // 加入 nodes[], 有运算操作，或者是可训练参数
         GGML_ASSERT(cgraph->n_nodes < cgraph->size);
 
         if (strlen(node->name) == 0) {

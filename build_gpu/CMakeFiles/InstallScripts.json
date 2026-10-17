@@ -1,0 +1,19 @@
+{
+	"InstallScripts" : 
+	[
+		"C:/Users/yding/Desktop/dy_ws/ggml/build_gpu/cmake_install.cmake",
+		"C:/Users/yding/Desktop/dy_ws/ggml/build_gpu/src/cmake_install.cmake",
+		"C:/Users/yding/Desktop/dy_ws/ggml/build_gpu/src/ggml-cpu/cmake_install.cmake",
+		"C:/Users/yding/Desktop/dy_ws/ggml/build_gpu/src/ggml-cuda/cmake_install.cmake",
+		"C:/Users/yding/Desktop/dy_ws/ggml/build_gpu/tests/cmake_install.cmake",
+		"C:/Users/yding/Desktop/dy_ws/ggml/build_gpu/examples/cmake_install.cmake",
+		"C:/Users/yding/Desktop/dy_ws/ggml/build_gpu/examples/yolo/cmake_install.cmake",
+		"C:/Users/yding/Desktop/dy_ws/ggml/build_gpu/examples/gpt-2/cmake_install.cmake",
+		"C:/Users/yding/Desktop/dy_ws/ggml/build_gpu/examples/gpt-j/cmake_install.cmake",
+		"C:/Users/yding/Desktop/dy_ws/ggml/build_gpu/examples/mnist/cmake_install.cmake",
+		"C:/Users/yding/Desktop/dy_ws/ggml/build_gpu/examples/sam/cmake_install.cmake",
+		"C:/Users/yding/Desktop/dy_ws/ggml/build_gpu/examples/simple/cmake_install.cmake",
+		"C:/Users/yding/Desktop/dy_ws/ggml/build_gpu/examples/magika/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

@@ -214,18 +214,30 @@ static_assert(sizeof(ggml_bitset_t) == 4, "bitset_t constants must be updated");
 #define BITSET_SHR 5 // log2(sizeof(ggml_bitset_t)*8)
 #define BITSET_MASK (sizeof(ggml_bitset_t)*8 - 1)
 
+// 保存 n 个标记位，需要多少个 ggml_bitset_t 数组元素。
 static size_t ggml_bitset_size(size_t n) {
-    return (n + BITSET_MASK) >> BITSET_SHR;
+    return (n + BITSET_MASK) >> BITSET_SHR;     // (n + 31) / 32;
 }
 
+// 判断哈希表的第 i 个槽位是否已被占用。使用位图后，32 个槽位的占用状态只需要 4 字节。
 static inline bool ggml_bitset_get(const ggml_bitset_t * bitset, size_t i) {
+    // size_t word = i >> 5： i / 32：位于哪个数组元素
+    // size_t bit  = i & 31： i % 32：位于该元素的哪一位
+    // uint32_t mask = 1u << bit： 生成只有目标位为 1 的掩码
+    // !!(bitset[word] & mask); 
+    //    & mask：取出目标位，其他位全部清零。
+    //    !!：把零转换成 false，非零转换成 true。
+    // eg: i = 37, 就读取 bitset[1] 的第 5 位，即: !!(bitset[1] & 0x00000020)， 0x00000020 == 0010 0000
     return !!(bitset[i >> BITSET_SHR] & (1u << (i & BITSET_MASK)));
 }
 
+// 希表的第 i 个槽位位置设置为 1， 标记槽位 i 已占用
 static inline void ggml_bitset_set(ggml_bitset_t * bitset, size_t i) {
-    bitset[i >> BITSET_SHR] |= (1u << (i & BITSET_MASK));
+    // 目标位与 1 做或运算，结果一定为 1；其他位与 0 做或运算，保持原值
+    bitset[i >> BITSET_SHR] |= (1u << (i & BITSET_MASK));   
 }
 
+// 希表的第 i 个槽位位置清除为 0， 标记槽位 i 未占用
 static inline void ggml_bitset_clear(ggml_bitset_t * bitset, size_t i) {
     bitset[i >> BITSET_SHR] &= ~(1u << (i & BITSET_MASK));
 }

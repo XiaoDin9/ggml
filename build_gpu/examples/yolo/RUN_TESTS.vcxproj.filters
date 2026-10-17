@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="18.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\yding\Desktop\dy_ws\ggml\build_gpu\CMakeFiles\c8f01afdc5781031b0a51ec14d666fa3\RUN_TESTS_force.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{2F28AA9A-8B6C-33B1-AAB4-8FBC3103A0B0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
