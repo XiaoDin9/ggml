@@ -1845,7 +1845,7 @@ static enum ggml_status ggml_backend_sched_compute_splits(ggml_backend_sched_t s
     return GGML_STATUS_SUCCESS;
 }
 
-// 主要是创建并初始化一个后端调度器，把已经创建好的 CPU、GPU 等后端组织起来，为后续执行计算图做好准备。
+// 创建一个“CPU / GPU 运算调度管理员”，并给它准备好记录表、内存规划器和同步工具。
 /*
 调度器后续负责三个核心问题：
     - 在哪算：决定每个算子交给哪个后端执行。
@@ -1873,6 +1873,7 @@ ggml_backend_sched_t ggml_backend_sched_new(
     GGML_ASSERT(n_backends <= GGML_SCHED_MAX_BACKENDS);     // 保证后端的数量有效
     GGML_ASSERT(ggml_backend_dev_type(ggml_backend_get_device(backends[n_backends - 1])) == GGML_BACKEND_DEVICE_TYPE_CPU);  // 最后一个后端是 CPU
 
+    // 申请一个调度器结构体，并把这块结构体内存清零。
     struct ggml_backend_sched * sched = (ggml_backend_sched *) calloc(1, sizeof(struct ggml_backend_sched));    // calloc() 使结构体初始为零
 
     const char * GGML_SCHED_DEBUG = getenv("GGML_SCHED_DEBUG");
@@ -1887,22 +1888,23 @@ ggml_backend_sched_t ggml_backend_sched_new(
 
     // 记录后端数量和副本槽位数量
     sched->n_backends = n_backends;
-    sched->n_copies = parallel ? GGML_SCHED_MAX_COPIES : 1;
+    sched->n_copies = parallel ? GGML_SCHED_MAX_COPIES : 1;     // 需要准备多少个可轮换使用的副本槽位
 
     // initialize hash table
     // FIXME: needs to be size*2 to account for leafs (do it in graph_split instead)
-    // 建立“张量 → 后端、副本” 的记录表
+    // 创建“张量查找表”, 调度器要知道：这个张量分配给哪个后端？它在其他后端上有没有副本？
     sched->hash_set    = ggml_hash_set_new(graph_size); // tensor 指针 → hash slot → 用 slot 查询旁边的辅助数组
     
-    /*
+    /* tensor -> 查找哈希表，得到 slot_id -> hv_tensor_backend_ids[slot_id] 得到 backend_id -> sched->backends[backend_id] 得到 backend;
         tensor        hash slot       hv_tensor_backend_ids
          A ─────────────► 7 ─────────────► 0 GPU
          B ─────────────►13 ─────────────► 0 GPU
          C ─────────────►21 ─────────────► 1 CPU
     */
+    // 记录“这个张量属于哪个后端”
     sched->hv_tensor_backend_ids = (int *) malloc(sched->hash_set.size * sizeof(sched->hv_tensor_backend_ids[0]));  // 记录张量所属的后端编号
     
-    // hv_tensor_copies[槽位][后端编号][副本槽位]，记录张量在目标后端上的副本指针
+    // hv_tensor_copies[张量哈希槽位][目标后端编号][副本槽位]，记录“这个张量在目标后端上的副本”
     /*
         A ─┐
            ├── GPU_MatMul ── C ──► CPU_OP ──► D
@@ -1913,10 +1915,11 @@ ggml_backend_sched_t ggml_backend_sched_new(
     */
     sched->hv_tensor_copies      = (ggml_tensor **) malloc(sched->hash_set.size * sched->n_backends * sched->n_copies * sizeof(struct ggml_tensor *));
 
-    // 分配节点、叶子和临时图的管理空间。（参考文档）
+    // 为计算图中的节点和叶子准备后端编号数组
     const size_t ggml_sched_max_splits = graph_size; // at most there is one split for each node in the graph
-    const size_t nodes_size = graph_size + ggml_sched_max_splits * GGML_SCHED_MAX_SPLIT_INPUTS * 2;
+    const size_t nodes_size = graph_size + ggml_sched_max_splits * GGML_SCHED_MAX_SPLIT_INPUTS * 2; // 原图容量 + 调度过程产生的辅助条目容量
     
+    // 对这里的计算图而言，叶子提供数据，计算节点执行运算并产生结果
     /* nodes[0] = MatMul, nodes[1] = Add, nodes[2] = RMSNorm
        node_backend_ids
          index     node        backend
@@ -1925,21 +1928,25 @@ ggml_backend_sched_t ggml_backend_sched_new(
           1      Add           GPU (0)
           2      RMSNorm       CPU (1)
     */
-    sched->node_backend_ids = (int *) calloc(nodes_size, sizeof(sched->node_backend_ids[0]));               // 当前调度内部图中，各节点的后端编号
-    sched->leaf_backend_ids = (int *) calloc(nodes_size, sizeof(sched->leaf_backend_ids[0]));               // 当前调度内部图中，各叶子的后端编号
+    // 当前内部图各计算节点对应的后端编号
+    sched->node_backend_ids = (int *) calloc(nodes_size, sizeof(sched->node_backend_ids[0])); 
+    // 当前内部图各叶子对应的后端编号
+    sched->leaf_backend_ids = (int *) calloc(nodes_size, sizeof(sched->leaf_backend_ids[0])); 
     
-    // 上一轮 graph 的 backend 分配结果
-    sched->prev_node_backend_ids = (int *) calloc(nodes_size, sizeof(sched->prev_node_backend_ids[0]));     // 保存上一轮节点后端编号
-    sched->prev_leaf_backend_ids = (int *) calloc(nodes_size, sizeof(sched->prev_leaf_backend_ids[0]));     // 保存上一轮叶子后端编号
+    // 上一次节点的后端分配记录
+    sched->prev_node_backend_ids = (int *) calloc(nodes_size, sizeof(sched->prev_node_backend_ids[0]));
+    // 上一次叶子的后端分配记录
+    sched->prev_leaf_backend_ids = (int *) calloc(nodes_size, sizeof(sched->prev_leaf_backend_ids[0]));
 
     sched->debug_graph_size = 0;
     sched->debug_prev_graph_size = 0;
 
-    // 这块空间供后续临时上下文使用，存放副本张量等描述信息
+    // 准备临时上下文空间
+    // 调度器处理计算图时，需要一块地方存放临时创建的“说明书”和“执行目录”。
     sched->context_buffer_size = ggml_sched_max_splits * GGML_SCHED_MAX_SPLIT_INPUTS * 2 * sizeof(struct ggml_tensor) + ggml_graph_overhead_custom(graph_size, false);
     sched->context_buffer = (char *) malloc(sched->context_buffer_size);
 
-    /*
+    /* 准备执行片段列表 splits, split 理解为: 交给某个后端执行的一段图
     原始图: A -> MatMul (GPU) -> Add (GPU) -> SpecialOp (CPU) -> MatMul (GPU) -> output
     graph split:
     split0: backend = GPU, MatMul, Add --- copy --->     splits[0] -> GPU
@@ -1950,11 +1957,12 @@ ggml_backend_sched_t ggml_backend_sched_new(
     sched->splits = (ggml_backend_sched_split *) calloc(initial_splits_capacity, sizeof(sched->splits[0]));             // 保存后续切分出的执行片段
     sched->splits_capacity = initial_splits_capacity;
 
-    // scheduler 特别追踪的“整张图输入 Tensor”
+    // 准备需要特别追踪的图输入列表
+    //   --- 这里存放的是后续调度需要追踪的输入张量指针，尤其与多副本、流水线输入管理有关。
     sched->graph_inputs_capacity = GGML_SCHED_MAX_SPLIT_INPUTS;
     sched->graph_inputs = (struct ggml_tensor **) calloc(sched->graph_inputs_capacity, sizeof(struct ggml_tensor *));   // 保存需要参与流水线管理的图输入
 
-    /*
+    /* 保存后端和内存类型，并检查能否配合使用
     backend: 谁负责算 (GPU / CPU)
     buffer type: 数据怎么存/在哪类内存中分配 (GPU VRAM / system RAM)
     */
@@ -1963,12 +1971,7 @@ ggml_backend_sched_t ggml_backend_sched_new(
         sched->bufts[b] = bufts ? bufts[b] : ggml_backend_get_default_buffer_type(backends[b]);
         GGML_ASSERT(ggml_backend_supports_buft(backends[b], sched->bufts[b]));
 
-        /* 本质山：“这个流水线槽位上的工作做完了吗？这块资源现在能不能再次使用？”
-                         copy0     copy1     copy2
-        GPU backend      event     event     event
-        CPU backend      event     event     event
-        GPU copy0 正在执行 -> event[GPU][0] --- 完成 ---> copy0 可以再次使用
-        */
+        // 为多副本槽位创建同步事件
         if (sched->n_copies > 1) {
             for (int c = 0; c < sched->n_copies; c++) {
                 sched->events[b][c] = ggml_backend_event_new(backends[b]->device);
@@ -1976,17 +1979,14 @@ ggml_backend_sched_t ggml_backend_sched_new(
         }
     }
 
-    // galloc 是真正负责图内存规划的重要角色
+    // 创建图内存分配器, galloc 是真正负责图内存规划的重要角色
     /*
-    scheduler
-        │ “这个节点去 GPU”
-        │ “那个节点去 CPU”
-        ▼
-    gallocr
-        ├── GPU tensor 内存怎么规划
-        └── CPU tensor 内存怎么规划
+    scheduler: 哪个节点交给哪个后端？哪些地方需要副本和传输？
+    gallocr: 张量需要多少空间？何时能复用空间？使用哪个 buffer？
     */
     sched->galloc = ggml_gallocr_new_n(sched->bufts, n_backends);
+
+    // 保存策略开关，重置并返回
     sched->op_offload = op_offload;     // 是否允许 scheduler 对 op 做 offload
 
     ggml_backend_sched_reset(sched);   // 重置记录，使调度器进入可用初始状态

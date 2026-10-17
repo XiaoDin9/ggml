@@ -1338,7 +1338,7 @@ size_t ggml_row_size(enum ggml_type type, int64_t ne) {
     assert(type >= 0);
     assert(type < GGML_TYPE_COUNT);
     assert(ne % ggml_blck_size(type) == 0);
-    return ggml_type_size(type)*ne/ggml_blck_size(type);
+    return ggml_type_size(type) * ne / ggml_blck_size(type);
 }
 
 double ggml_type_sizef(enum ggml_type type) {
@@ -3354,10 +3354,11 @@ static inline bool ggml_can_mul_mat(const struct ggml_tensor * t0, const struct 
     // t0->ne[0] == t1->ne[0], 要求两个输入的最内层维度相等。这个维度是点积时需要遍历和累加的维度，通常记为 K, 即: a 和 b 的每一行都有 K 个元素
     // 后两个条件检查第 2、3 维是否允许把 t0 广播到 t1，后面再展开
     return (t0->ne[0]           == t1->ne[0])  &&
-           (t1->ne[2]%t0->ne[2] == 0)          && // verify t0 is broadcastable
-           (t1->ne[3]%t0->ne[3] == 0);
+           (t1->ne[2] % t0->ne[2] == 0)          && // verify t0 is broadcastable
+           (t1->ne[3] % t0->ne[3] == 0);
 }
 
+// B x A^T
 struct ggml_tensor * ggml_mul_mat(
         struct ggml_context * ctx,
         struct ggml_tensor  * a,
@@ -7559,7 +7560,7 @@ struct ggml_cgraph * ggml_new_graph_custom(struct ggml_context * ctx, size_t siz
     // the size of the hash table is doubled since it needs to hold both nodes and leafs
     size_t hash_size = ggml_hash_size(size * 2);
 
-    void * p = cgraph + 1;
+    void * p = cgraph + 1;      // 跳过 ggml_cgraph 本体
 
     struct ggml_tensor ** nodes_ptr      =         incr_ptr_aligned(&p, size      * sizeof(struct ggml_tensor *), sizeof(struct ggml_tensor *));
     struct ggml_tensor ** leafs_ptr      =         incr_ptr_aligned(&p, size      * sizeof(struct ggml_tensor *), sizeof(struct ggml_tensor *));

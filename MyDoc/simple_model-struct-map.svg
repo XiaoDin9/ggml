@@ -1,0 +1,839 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="8440" height="5650" viewBox="0 0 8440 5650" role="img" aria-labelledby="title desc">
+<title id="title">simple_model 成员类型递归展开图</title>
+<desc id="desc">30 个结构体节点，57 条结构体成员关系。包含指针、数组、typedef 和条件编译匿名结构体。每个成员保留源码声明。</desc>
+<style>text{font-family:"Microsoft YaHei","Noto Sans CJK SC",sans-serif}.mono{font-family:Consolas,"DejaVu Sans Mono",monospace}.node:target>rect:first-of-type{stroke:#ee375c;stroke-width:6}a{cursor:pointer}</style>
+<rect width="8440" height="5650" fill="#f5f7fb"/>
+<text x="120" y="45" font-size="54" fill="#26354a" font-weight="700" class="label" dominant-baseline="text-before-edge">simple_model  /  成员类型递归展开</text>
+<text x="120" y="115" font-size="28" fill="#64748b" font-weight="400" class="label" dominant-baseline="text-before-edge">按当前工作区源码生成 · 结构关系图（不表示内存偏移或运行时对象数量） · 2026-10-17</text>
+<rect x="2200" y="190" width="6080" height="440" rx="18" fill="#eaf0f8" stroke="none" stroke-width="1"/>
+<text x="2240" y="215" font-size="33" fill="#26354a" font-weight="700" class="label" dominant-baseline="text-before-edge">阅读方式</text>
+<text x="2240" y="270" font-size="27" fill="#26354a" font-weight="400" class="label" dominant-baseline="text-before-edge">① 从 M01 出发：a / b → T01；backend / cpu_backend → B01；sched → S01。</text>
+<text x="2240" y="312" font-size="27" fill="#26354a" font-weight="400" class="label" dominant-baseline="text-before-edge">② 每行右侧 →编号 指向对应的结构体卡片；SVG 中可点击编号跳转。共享类型只展开一次。</text>
+<text x="2240" y="354" font-size="27" fill="#26354a" font-weight="400" class="label" dominant-baseline="text-before-edge">③ 实线 + 菱形：按值内嵌（含结构体数组）；虚线：指针 / 指针数组 / 结构体指针 typedef。</text>
+<text x="2240" y="396" font-size="27" fill="#26354a" font-weight="400" class="label" dominant-baseline="text-before-edge">④ 同栏首次展开画连接线；跨栏与重复引用通过编号连接，避免长线遮挡成员。</text>
+<text x="2240" y="438" font-size="27" fill="#26354a" font-weight="400" class="label" dominant-baseline="text-before-edge">⑤ 基础类型、enum、void *、函数指针是终点；std::vector&lt;uint8_t&gt; 的元素是 uint8_t。</text>
+<text x="2240" y="480" font-size="27" fill="#26354a" font-weight="400" class="label" dominant-baseline="text-before-edge">⑥ iface 也是结构体，已逐成员展开；函数签名中的参数 / 返回类型不作为数据成员递归。</text>
+<text x="2240" y="522" font-size="27" fill="#26354a" font-weight="400" class="label" dominant-baseline="text-before-edge">覆盖：29 个具名结构体 + 1 个条件编译匿名结构体；57 条结构体成员关系。</text>
+<rect x="94" y="705" width="1950" height="4491" rx="18" fill="#edf1f7" stroke="none" stroke-width="1"/>
+<rect x="94" y="705" width="1950" height="72" rx="12" fill="#087f8c" stroke="none" stroke-width="1"/>
+<text x="120" y="720" font-size="32" fill="#ffffff" font-weight="700" class="label" dominant-baseline="text-before-edge">01  张量与存储</text>
+<rect x="2174" y="705" width="1950" height="4491" rx="18" fill="#edf1f7" stroke="none" stroke-width="1"/>
+<rect x="2174" y="705" width="1950" height="72" rx="12" fill="#7450b6" stroke="none" stroke-width="1"/>
+<text x="2200" y="720" font-size="32" fill="#ffffff" font-weight="700" class="label" dominant-baseline="text-before-edge">02  后端、设备与注册</text>
+<rect x="4254" y="705" width="1950" height="4491" rx="18" fill="#edf1f7" stroke="none" stroke-width="1"/>
+<rect x="4254" y="705" width="1950" height="72" rx="12" fill="#2266c2" stroke="none" stroke-width="1"/>
+<text x="4280" y="720" font-size="32" fill="#ffffff" font-weight="700" class="label" dominant-baseline="text-before-edge">03  调度器、计算图与上下文</text>
+<rect x="6334" y="705" width="1950" height="4491" rx="18" fill="#edf1f7" stroke="none" stroke-width="1"/>
+<rect x="6334" y="705" width="1950" height="72" rx="12" fill="#b96913" stroke="none" stroke-width="1"/>
+<text x="6360" y="720" font-size="32" fill="#ffffff" font-weight="700" class="label" dominant-baseline="text-before-edge">04  图分配器递归展开</text>
+<g id="M01" class="node">
+<rect x="120" y="190" width="1800" height="440" rx="12" fill="#ffffff" stroke="#ced8e6" stroke-width="2"/>
+<rect x="120" y="190" width="1800" height="60" rx="10" fill="#24354d" stroke="none" stroke-width="1"/>
+<text x="143" y="200" font-size="30" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">M01</text>
+<text x="242" y="202" font-size="29" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">struct simple_model</text>
+<text x="143" y="265" font-size="24" fill="#63758d" font-weight="400" class="mono" dominant-baseline="text-before-edge">examples/simple/simple-backend.cpp:19</text>
+<text x="143" y="301" font-size="25" fill="#24354d" font-weight="400" class="label" dominant-baseline="text-before-edge">递归起点 · examples/simple/simple-backend.cpp</text>
+<rect x="123" y="338" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="143" y="340" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct ggml_tensor * a {};</text>
+<a href="#T01"><title>跳转到 T01</title>
+<text x="1765" y="340" font-size="23" fill="#087f8c" font-weight="700" class="label" dominant-baseline="text-before-edge">* → T01</text>
+</a>
+<rect x="123" y="383" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="143" y="385" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct ggml_tensor * b {};</text>
+<a href="#T01"><title>跳转到 T01</title>
+<text x="1765" y="385" font-size="23" fill="#087f8c" font-weight="700" class="label" dominant-baseline="text-before-edge">* → T01</text>
+</a>
+<rect x="123" y="428" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="143" y="430" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">ggml_backend_t backend {};</text>
+<a href="#B01"><title>跳转到 B01</title>
+<text x="1765" y="430" font-size="23" fill="#7450b6" font-weight="700" class="label" dominant-baseline="text-before-edge">* → B01</text>
+</a>
+<rect x="123" y="473" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="143" y="475" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">ggml_backend_t cpu_backend {};</text>
+<a href="#B01"><title>跳转到 B01</title>
+<text x="1765" y="475" font-size="23" fill="#7450b6" font-weight="700" class="label" dominant-baseline="text-before-edge">* → B01</text>
+</a>
+<rect x="123" y="518" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="143" y="520" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">ggml_backend_sched_t sched {};</text>
+<a href="#S01"><title>跳转到 S01</title>
+<text x="1765" y="520" font-size="23" fill="#2266c2" font-weight="700" class="label" dominant-baseline="text-before-edge">* → S01</text>
+</a>
+<text x="143" y="565" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">std::vector&lt;uint8_t&gt; buf;</text>
+</g>
+<g id="T01" class="node">
+<rect x="120" y="805" width="1800" height="800" rx="12" fill="#ffffff" stroke="#ced8e6" stroke-width="2"/>
+<rect x="120" y="805" width="1800" height="60" rx="10" fill="#087f8c" stroke="none" stroke-width="1"/>
+<text x="143" y="815" font-size="30" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">T01</text>
+<text x="242" y="817" font-size="29" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">struct ggml_tensor</text>
+<text x="143" y="880" font-size="24" fill="#63758d" font-weight="400" class="mono" dominant-baseline="text-before-edge">include/ggml.h:721</text>
+<text x="143" y="916" font-size="25" fill="#087f8c" font-weight="400" class="label" dominant-baseline="text-before-edge">张量描述、运算依赖与视图来源</text>
+<text x="143" y="955" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">enum ggml_type type;</text>
+<rect x="123" y="998" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="143" y="1000" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct ggml_backend_buffer * buffer;</text>
+<a href="#T02"><title>跳转到 T02</title>
+<text x="1765" y="1000" font-size="23" fill="#087f8c" font-weight="700" class="label" dominant-baseline="text-before-edge">* → T02</text>
+</a>
+<text x="143" y="1045" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int64_t ne[GGML_MAX_DIMS];</text>
+<text x="143" y="1090" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">size_t nb[GGML_MAX_DIMS];</text>
+<text x="143" y="1135" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">enum ggml_op op;</text>
+<text x="143" y="1180" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int32_t op_params[GGML_MAX_OP_PARAMS / sizeof(int32_t)];</text>
+<text x="143" y="1225" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int32_t flags;</text>
+<rect x="123" y="1268" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="143" y="1270" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct ggml_tensor * src[GGML_MAX_SRC];</text>
+<a href="#T01"><title>跳转到 T01</title>
+<text x="1765" y="1270" font-size="23" fill="#087f8c" font-weight="700" class="label" dominant-baseline="text-before-edge">* → T01</text>
+</a>
+<rect x="123" y="1313" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="143" y="1315" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct ggml_tensor * view_src;</text>
+<a href="#T01"><title>跳转到 T01</title>
+<text x="1765" y="1315" font-size="23" fill="#087f8c" font-weight="700" class="label" dominant-baseline="text-before-edge">* → T01</text>
+</a>
+<text x="143" y="1360" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">size_t view_offs;</text>
+<text x="143" y="1405" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">void * data;</text>
+<text x="143" y="1450" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">char name[GGML_MAX_NAME];</text>
+<text x="143" y="1495" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">void * extra;</text>
+<text x="143" y="1540" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">char padding[8];</text>
+</g>
+<g id="T02" class="node">
+<rect x="120" y="1669" width="1800" height="395" rx="12" fill="#ffffff" stroke="#ced8e6" stroke-width="2"/>
+<rect x="120" y="1669" width="1800" height="60" rx="10" fill="#087f8c" stroke="none" stroke-width="1"/>
+<text x="143" y="1679" font-size="30" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">T02</text>
+<text x="242" y="1681" font-size="29" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">struct ggml_backend_buffer</text>
+<text x="143" y="1744" font-size="24" fill="#63758d" font-weight="400" class="mono" dominant-baseline="text-before-edge">src/ggml-backend-impl.h:69</text>
+<text x="143" y="1780" font-size="25" fill="#087f8c" font-weight="400" class="label" dominant-baseline="text-before-edge">一块后端存储及其访问接口</text>
+<rect x="123" y="1817" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="143" y="1819" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct ggml_backend_buffer_i iface;</text>
+<a href="#T04"><title>跳转到 T04</title>
+<text x="1765" y="1819" font-size="23" fill="#087f8c" font-weight="700" class="label" dominant-baseline="text-before-edge">◇ → T04</text>
+</a>
+<rect x="123" y="1862" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="143" y="1864" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">ggml_backend_buffer_type_t buft;</text>
+<a href="#T03"><title>跳转到 T03</title>
+<text x="1765" y="1864" font-size="23" fill="#087f8c" font-weight="700" class="label" dominant-baseline="text-before-edge">* → T03</text>
+</a>
+<text x="143" y="1909" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">void * context;</text>
+<text x="143" y="1954" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">size_t size;</text>
+<text x="143" y="1999" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">enum ggml_backend_buffer_usage usage;</text>
+</g>
+<g id="T03" class="node">
+<rect x="120" y="2128" width="1800" height="305" rx="12" fill="#ffffff" stroke="#ced8e6" stroke-width="2"/>
+<rect x="120" y="2128" width="1800" height="60" rx="10" fill="#087f8c" stroke="none" stroke-width="1"/>
+<text x="143" y="2138" font-size="30" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">T03</text>
+<text x="242" y="2140" font-size="29" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">struct ggml_backend_buffer_type</text>
+<text x="143" y="2203" font-size="24" fill="#63758d" font-weight="400" class="mono" dominant-baseline="text-before-edge">src/ggml-backend-impl.h:31</text>
+<text x="143" y="2239" font-size="25" fill="#087f8c" font-weight="400" class="label" dominant-baseline="text-before-edge">分配策略、设备与内存对齐</text>
+<rect x="123" y="2276" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="143" y="2278" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct ggml_backend_buffer_type_i iface;</text>
+<a href="#T05"><title>跳转到 T05</title>
+<text x="1765" y="2278" font-size="23" fill="#087f8c" font-weight="700" class="label" dominant-baseline="text-before-edge">◇ → T05</text>
+</a>
+<rect x="123" y="2321" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="143" y="2323" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">ggml_backend_dev_t device;</text>
+<a href="#B03"><title>跳转到 B03</title>
+<text x="1765" y="2323" font-size="23" fill="#7450b6" font-weight="700" class="label" dominant-baseline="text-before-edge">* → B03</text>
+</a>
+<text x="143" y="2368" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">void * context;</text>
+</g>
+<g id="T04" class="node">
+<rect x="120" y="2497" width="1800" height="830" rx="12" fill="#ffffff" stroke="#ced8e6" stroke-width="2"/>
+<rect x="120" y="2497" width="1800" height="60" rx="10" fill="#087f8c" stroke="none" stroke-width="1"/>
+<text x="143" y="2507" font-size="30" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">T04</text>
+<text x="242" y="2509" font-size="29" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">struct ggml_backend_buffer_i</text>
+<text x="143" y="2572" font-size="24" fill="#63758d" font-weight="400" class="mono" dominant-baseline="text-before-edge">src/ggml-backend-impl.h:46</text>
+<text x="143" y="2608" font-size="25" fill="#087f8c" font-weight="400" class="label" dominant-baseline="text-before-edge">函数指针成员：逐项保留完整签名</text>
+<text x="143" y="2647" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">void (*free_buffer) (ggml_backend_buffer_t buffer);</text>
+<text x="1820" y="2647" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="143" y="2692" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">void * (*get_base) (ggml_backend_buffer_t buffer);</text>
+<text x="1820" y="2692" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="143" y="2737" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">enum ggml_status (*init_tensor)(ggml_backend_buffer_t buffer, struct ggml_tensor * tensor);</text>
+<text x="1820" y="2737" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="143" y="2782" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">void (*memset_tensor)(ggml_backend_buffer_t buffer, struct ggml_tensor * tensor, uint8_t value, size_t offset,</text>
+<text x="143" y="2815" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">    size_t size);</text>
+<text x="1820" y="2782" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="143" y="2860" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">void (*set_tensor) (ggml_backend_buffer_t buffer, struct ggml_tensor * tensor, const void * data, size_t offset,</text>
+<text x="143" y="2893" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">    size_t size);</text>
+<text x="1820" y="2860" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="143" y="2938" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">void (*get_tensor) (ggml_backend_buffer_t buffer, const struct ggml_tensor * tensor, void * data, size_t offset,</text>
+<text x="143" y="2971" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">    size_t size);</text>
+<text x="1820" y="2938" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="143" y="3016" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">void (*set_tensor_2d)(ggml_backend_buffer_t buffer, struct ggml_tensor * tensor, const void * data, size_t offset,</text>
+<text x="143" y="3049" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">    size_t size, size_t n_copies, size_t stride_tensor, size_t stride_data);</text>
+<text x="1820" y="3016" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="143" y="3094" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">void (*get_tensor_2d)(ggml_backend_buffer_t buffer, const struct ggml_tensor * tensor, void * data, size_t offset,</text>
+<text x="143" y="3127" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">    size_t size, size_t n_copies, size_t stride_tensor, size_t stride_data);</text>
+<text x="1820" y="3094" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="143" y="3172" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">bool (*cpy_tensor) (ggml_backend_buffer_t buffer, const struct ggml_tensor * src, struct ggml_tensor * dst);</text>
+<text x="1820" y="3172" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="143" y="3217" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">void (*clear) (ggml_backend_buffer_t buffer, uint8_t value);</text>
+<text x="1820" y="3217" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="143" y="3262" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">void (*reset) (ggml_backend_buffer_t buffer);</text>
+<text x="1820" y="3262" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+</g>
+<g id="T05" class="node">
+<rect x="120" y="3391" width="1800" height="440" rx="12" fill="#ffffff" stroke="#ced8e6" stroke-width="2"/>
+<rect x="120" y="3391" width="1800" height="60" rx="10" fill="#087f8c" stroke="none" stroke-width="1"/>
+<text x="143" y="3401" font-size="30" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">T05</text>
+<text x="242" y="3403" font-size="29" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">struct ggml_backend_buffer_type_i</text>
+<text x="143" y="3466" font-size="24" fill="#63758d" font-weight="400" class="mono" dominant-baseline="text-before-edge">src/ggml-backend-impl.h:17</text>
+<text x="143" y="3502" font-size="25" fill="#087f8c" font-weight="400" class="label" dominant-baseline="text-before-edge">函数指针成员：逐项保留完整签名</text>
+<text x="143" y="3541" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">const char * (*get_name) (ggml_backend_buffer_type_t buft);</text>
+<text x="1820" y="3541" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="143" y="3586" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">ggml_backend_buffer_t (*alloc_buffer) (ggml_backend_buffer_type_t buft, size_t size);</text>
+<text x="1820" y="3586" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="143" y="3631" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">size_t (*get_alignment) (ggml_backend_buffer_type_t buft);</text>
+<text x="1820" y="3631" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="143" y="3676" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">size_t (*get_max_size) (ggml_backend_buffer_type_t buft);</text>
+<text x="1820" y="3676" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="143" y="3721" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">size_t (*get_alloc_size)(ggml_backend_buffer_type_t buft, const struct ggml_tensor * tensor);</text>
+<text x="1820" y="3721" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="143" y="3766" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">bool (*is_host) (ggml_backend_buffer_type_t buft);</text>
+<text x="1820" y="3766" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+</g>
+<g id="B01" class="node">
+<rect x="2200" y="805" width="1800" height="350" rx="12" fill="#ffffff" stroke="#ced8e6" stroke-width="2"/>
+<rect x="2200" y="805" width="1800" height="60" rx="10" fill="#7450b6" stroke="none" stroke-width="1"/>
+<text x="2223" y="815" font-size="30" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">B01</text>
+<text x="2322" y="817" font-size="29" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">struct ggml_backend</text>
+<text x="2223" y="880" font-size="24" fill="#63758d" font-weight="400" class="mono" dominant-baseline="text-before-edge">src/ggml-backend-impl.h:158</text>
+<text x="2223" y="916" font-size="25" fill="#7450b6" font-weight="400" class="label" dominant-baseline="text-before-edge">backend / cpu_backend 可指向同一对象</text>
+<text x="2223" y="955" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">ggml_guid_t guid;</text>
+<rect x="2203" y="998" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="2223" y="1000" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct ggml_backend_i iface;</text>
+<a href="#B02"><title>跳转到 B02</title>
+<text x="3845" y="1000" font-size="23" fill="#7450b6" font-weight="700" class="label" dominant-baseline="text-before-edge">◇ → B02</text>
+</a>
+<rect x="2203" y="1043" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="2223" y="1045" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">ggml_backend_dev_t device;</text>
+<a href="#B03"><title>跳转到 B03</title>
+<text x="3845" y="1045" font-size="23" fill="#7450b6" font-weight="700" class="label" dominant-baseline="text-before-edge">* → B03</text>
+</a>
+<text x="2223" y="1090" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">void * context;</text>
+</g>
+<g id="B02" class="node">
+<rect x="2200" y="1219" width="1800" height="1121" rx="12" fill="#ffffff" stroke="#ced8e6" stroke-width="2"/>
+<rect x="2200" y="1219" width="1800" height="60" rx="10" fill="#7450b6" stroke="none" stroke-width="1"/>
+<text x="2223" y="1229" font-size="30" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">B02</text>
+<text x="2322" y="1231" font-size="29" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">struct ggml_backend_i</text>
+<text x="2223" y="1294" font-size="24" fill="#63758d" font-weight="400" class="mono" dominant-baseline="text-before-edge">src/ggml-backend-impl.h:121</text>
+<text x="2223" y="1330" font-size="25" fill="#7450b6" font-weight="400" class="label" dominant-baseline="text-before-edge">执行后端接口；成员均为函数指针</text>
+<text x="2223" y="1369" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">const char * (*get_name)(ggml_backend_t backend);</text>
+<text x="3900" y="1369" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="2223" y="1414" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">void (*free)(ggml_backend_t backend);</text>
+<text x="3900" y="1414" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="2223" y="1459" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">void (*set_tensor_async) (ggml_backend_t backend, struct ggml_tensor * tensor, const void * data, size_t offset,</text>
+<text x="2223" y="1492" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">    size_t size);</text>
+<text x="3900" y="1459" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="2223" y="1537" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">void (*get_tensor_async) (ggml_backend_t backend, const struct ggml_tensor * tensor, void * data, size_t offset,</text>
+<text x="2223" y="1570" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">    size_t size);</text>
+<text x="3900" y="1537" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="2223" y="1615" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">void (*set_tensor_2d_async)(ggml_backend_t backend, struct ggml_tensor * tensor, const void * data, size_t offset,</text>
+<text x="2223" y="1648" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">    size_t size, size_t n_copies, size_t stride_tensor, size_t stride_data);</text>
+<text x="3900" y="1615" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="2223" y="1693" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">void (*get_tensor_2d_async)(ggml_backend_t backend, const struct ggml_tensor * tensor, void * data, size_t offset,</text>
+<text x="2223" y="1726" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">    size_t size, size_t n_copies, size_t stride_tensor, size_t stride_data);</text>
+<text x="3900" y="1693" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="2223" y="1771" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">bool (*cpy_tensor_async)(ggml_backend_t backend_src, ggml_backend_t backend_dst, const struct ggml_tensor * src,</text>
+<text x="2223" y="1804" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">    struct ggml_tensor * dst);</text>
+<text x="3900" y="1771" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="2223" y="1849" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">void (*synchronize)(ggml_backend_t backend);</text>
+<text x="3900" y="1849" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="2223" y="1894" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">ggml_backend_graph_plan_t (*graph_plan_create) (ggml_backend_t backend, const struct ggml_cgraph * cgraph);</text>
+<text x="3900" y="1894" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="2223" y="1939" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">void (*graph_plan_free) (ggml_backend_t backend, ggml_backend_graph_plan_t plan);</text>
+<text x="3900" y="1939" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="2223" y="1984" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">void (*graph_plan_update) (ggml_backend_t backend, ggml_backend_graph_plan_t plan, const struct ggml_cgraph *</text>
+<text x="2223" y="2017" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">    cgraph);</text>
+<text x="3900" y="1984" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="2223" y="2062" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">enum ggml_status (*graph_plan_compute)(ggml_backend_t backend, ggml_backend_graph_plan_t plan);</text>
+<text x="3900" y="2062" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="2223" y="2107" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">enum ggml_status (*graph_compute) (ggml_backend_t backend, struct ggml_cgraph * cgraph);</text>
+<text x="3900" y="2107" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="2223" y="2152" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">void (*event_record)(ggml_backend_t backend, ggml_backend_event_t event);</text>
+<text x="3900" y="2152" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="2223" y="2197" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">void (*event_wait) (ggml_backend_t backend, ggml_backend_event_t event);</text>
+<text x="3900" y="2197" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="2223" y="2242" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">void (*graph_optimize) (ggml_backend_t backend, struct ggml_cgraph * cgraph, struct</text>
+<text x="2223" y="2275" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">    ggml_backend_graph_optimize_params * params);</text>
+<text x="3900" y="2242" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+</g>
+<g id="B03" class="node">
+<rect x="2200" y="2404" width="1800" height="305" rx="12" fill="#ffffff" stroke="#ced8e6" stroke-width="2"/>
+<rect x="2200" y="2404" width="1800" height="60" rx="10" fill="#7450b6" stroke="none" stroke-width="1"/>
+<text x="2223" y="2414" font-size="30" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">B03</text>
+<text x="2322" y="2416" font-size="29" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">struct ggml_backend_device</text>
+<text x="2223" y="2479" font-size="24" fill="#63758d" font-weight="400" class="mono" dominant-baseline="text-before-edge">src/ggml-backend-impl.h:220</text>
+<text x="2223" y="2515" font-size="25" fill="#7450b6" font-weight="400" class="label" dominant-baseline="text-before-edge">设备对象及所属后端注册信息</text>
+<rect x="2203" y="2552" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="2223" y="2554" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct ggml_backend_device_i iface;</text>
+<a href="#B04"><title>跳转到 B04</title>
+<text x="3845" y="2554" font-size="23" fill="#7450b6" font-weight="700" class="label" dominant-baseline="text-before-edge">◇ → B04</text>
+</a>
+<rect x="2203" y="2597" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="2223" y="2599" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">ggml_backend_reg_t reg;</text>
+<a href="#B05"><title>跳转到 B05</title>
+<text x="3845" y="2599" font-size="23" fill="#7450b6" font-weight="700" class="label" dominant-baseline="text-before-edge">* → B05</text>
+</a>
+<text x="2223" y="2644" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">void * context;</text>
+</g>
+<g id="B04" class="node">
+<rect x="2200" y="2773" width="1800" height="878" rx="12" fill="#ffffff" stroke="#ced8e6" stroke-width="2"/>
+<rect x="2200" y="2773" width="1800" height="60" rx="10" fill="#7450b6" stroke="none" stroke-width="1"/>
+<text x="2223" y="2783" font-size="30" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">B04</text>
+<text x="2322" y="2785" font-size="29" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">struct ggml_backend_device_i</text>
+<text x="2223" y="2848" font-size="24" fill="#63758d" font-weight="400" class="mono" dominant-baseline="text-before-edge">src/ggml-backend-impl.h:176</text>
+<text x="2223" y="2884" font-size="25" fill="#7450b6" font-weight="400" class="label" dominant-baseline="text-before-edge">设备接口；签名中的类型不是内嵌成员</text>
+<text x="2223" y="2923" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">const char * (*get_name)(ggml_backend_dev_t dev);</text>
+<text x="3900" y="2923" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="2223" y="2968" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">const char * (*get_description)(ggml_backend_dev_t dev);</text>
+<text x="3900" y="2968" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="2223" y="3013" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">void (*get_memory)(ggml_backend_dev_t dev, size_t * free, size_t * total);</text>
+<text x="3900" y="3013" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="2223" y="3058" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">enum ggml_backend_dev_type (*get_type)(ggml_backend_dev_t dev);</text>
+<text x="3900" y="3058" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="2223" y="3103" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">void (*get_props)(ggml_backend_dev_t dev, struct ggml_backend_dev_props * props);</text>
+<text x="3900" y="3103" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="2223" y="3148" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">ggml_backend_t (*init_backend)(ggml_backend_dev_t dev, const char * params);</text>
+<text x="3900" y="3148" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="2223" y="3193" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">ggml_backend_buffer_type_t (*get_buffer_type)(ggml_backend_dev_t dev);</text>
+<text x="3900" y="3193" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="2223" y="3238" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">ggml_backend_buffer_type_t (*get_host_buffer_type)(ggml_backend_dev_t dev);</text>
+<text x="3900" y="3238" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="2223" y="3283" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">ggml_backend_buffer_t (*buffer_from_host_ptr)(ggml_backend_dev_t dev, void * ptr, size_t size, size_t</text>
+<text x="2223" y="3316" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">    max_tensor_size);</text>
+<text x="3900" y="3283" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="2223" y="3361" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">bool (*supports_op)(ggml_backend_dev_t dev, const struct ggml_tensor * op);</text>
+<text x="3900" y="3361" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="2223" y="3406" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">bool (*supports_buft)(ggml_backend_dev_t dev, ggml_backend_buffer_type_t buft);</text>
+<text x="3900" y="3406" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="2223" y="3451" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">bool (*offload_op)(ggml_backend_dev_t dev, const struct ggml_tensor * op);</text>
+<text x="3900" y="3451" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="2223" y="3496" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">ggml_backend_event_t (*event_new) (ggml_backend_dev_t dev);</text>
+<text x="3900" y="3496" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="2223" y="3541" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">void (*event_free) (ggml_backend_dev_t dev, ggml_backend_event_t event);</text>
+<text x="3900" y="3541" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="2223" y="3586" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">void (*event_synchronize) (ggml_backend_dev_t dev, ggml_backend_event_t event);</text>
+<text x="3900" y="3586" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+</g>
+<g id="B05" class="node">
+<rect x="2200" y="3715" width="1800" height="305" rx="12" fill="#ffffff" stroke="#ced8e6" stroke-width="2"/>
+<rect x="2200" y="3715" width="1800" height="60" rx="10" fill="#7450b6" stroke="none" stroke-width="1"/>
+<text x="2223" y="3725" font-size="30" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">B05</text>
+<text x="2322" y="3727" font-size="29" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">struct ggml_backend_reg</text>
+<text x="2223" y="3790" font-size="24" fill="#63758d" font-weight="400" class="mono" dominant-baseline="text-before-edge">src/ggml-backend-impl.h:242</text>
+<text x="2223" y="3826" font-size="25" fill="#7450b6" font-weight="400" class="label" dominant-baseline="text-before-edge">后端注册入口；iface 按值内嵌</text>
+<text x="2223" y="3865" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int api_version;</text>
+<rect x="2203" y="3908" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="2223" y="3910" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct ggml_backend_reg_i iface;</text>
+<a href="#B06"><title>跳转到 B06</title>
+<text x="3845" y="3910" font-size="23" fill="#7450b6" font-weight="700" class="label" dominant-baseline="text-before-edge">◇ → B06</text>
+</a>
+<text x="2223" y="3955" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">void * context;</text>
+</g>
+<g id="B06" class="node">
+<rect x="2200" y="4084" width="1800" height="350" rx="12" fill="#ffffff" stroke="#ced8e6" stroke-width="2"/>
+<rect x="2200" y="4084" width="1800" height="60" rx="10" fill="#7450b6" stroke="none" stroke-width="1"/>
+<text x="2223" y="4094" font-size="30" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">B06</text>
+<text x="2322" y="4096" font-size="29" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">struct ggml_backend_reg_i</text>
+<text x="2223" y="4159" font-size="24" fill="#63758d" font-weight="400" class="mono" dominant-baseline="text-before-edge">src/ggml-backend-impl.h:230</text>
+<text x="2223" y="4195" font-size="25" fill="#7450b6" font-weight="400" class="label" dominant-baseline="text-before-edge">设备枚举与扩展函数查询接口</text>
+<text x="2223" y="4234" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">const char * (*get_name)(ggml_backend_reg_t reg);</text>
+<text x="3900" y="4234" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="2223" y="4279" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">size_t (*get_device_count)(ggml_backend_reg_t reg);</text>
+<text x="3900" y="4279" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="2223" y="4324" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">ggml_backend_dev_t (*get_device)(ggml_backend_reg_t reg, size_t index);</text>
+<text x="3900" y="4324" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+<text x="2223" y="4369" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">void * (*get_proc_address)(ggml_backend_reg_t reg, const char * name);</text>
+<text x="3900" y="4369" font-size="22" fill="#7b8596" font-weight="400" class="mono" dominant-baseline="text-before-edge">fn ptr</text>
+</g>
+<g id="B07" class="node">
+<rect x="2200" y="4498" width="1800" height="260" rx="12" fill="#ffffff" stroke="#ced8e6" stroke-width="2"/>
+<rect x="2200" y="4498" width="1800" height="60" rx="10" fill="#7450b6" stroke="none" stroke-width="1"/>
+<text x="2223" y="4508" font-size="30" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">B07</text>
+<text x="2322" y="4510" font-size="29" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">struct ggml_backend_event</text>
+<text x="2223" y="4573" font-size="24" fill="#63758d" font-weight="400" class="mono" dominant-baseline="text-before-edge">src/ggml-backend-impl.h:165</text>
+<text x="2223" y="4609" font-size="25" fill="#7450b6" font-weight="400" class="label" dominant-baseline="text-before-edge">调度器保存的后端同步事件</text>
+<rect x="2203" y="4646" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="2223" y="4648" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct ggml_backend_device * device;</text>
+<a href="#B03"><title>跳转到 B03</title>
+<text x="3845" y="4648" font-size="23" fill="#7450b6" font-weight="700" class="label" dominant-baseline="text-before-edge">* → B03</text>
+</a>
+<text x="2223" y="4693" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">void * context;</text>
+</g>
+<g id="S01" class="node">
+<rect x="4280" y="805" width="1800" height="1700" rx="12" fill="#ffffff" stroke="#ced8e6" stroke-width="2"/>
+<rect x="4280" y="805" width="1800" height="60" rx="10" fill="#2266c2" stroke="none" stroke-width="1"/>
+<text x="4303" y="815" font-size="30" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">S01</text>
+<text x="4402" y="817" font-size="29" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">struct ggml_backend_sched</text>
+<text x="4303" y="880" font-size="24" fill="#63758d" font-weight="400" class="mono" dominant-baseline="text-before-edge">src/ggml-backend.cpp:786</text>
+<text x="4303" y="916" font-size="25" fill="#2266c2" font-weight="400" class="label" dominant-baseline="text-before-edge">成员依次保留源码顺序；galloc 展开见 A01</text>
+<text x="4303" y="955" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">bool is_reset;</text>
+<text x="4303" y="1000" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">bool is_alloc;</text>
+<text x="4303" y="1045" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int n_backends;</text>
+<rect x="4283" y="1088" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="4303" y="1090" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">ggml_backend_t backends[GGML_SCHED_MAX_BACKENDS];</text>
+<a href="#B01"><title>跳转到 B01</title>
+<text x="5925" y="1090" font-size="23" fill="#7450b6" font-weight="700" class="label" dominant-baseline="text-before-edge">* → B01</text>
+</a>
+<rect x="4283" y="1133" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="4303" y="1135" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">ggml_backend_buffer_type_t bufts[GGML_SCHED_MAX_BACKENDS];</text>
+<a href="#T03"><title>跳转到 T03</title>
+<text x="5925" y="1135" font-size="23" fill="#087f8c" font-weight="700" class="label" dominant-baseline="text-before-edge">* → T03</text>
+</a>
+<rect x="4283" y="1178" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="4303" y="1180" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">ggml_gallocr_t galloc;</text>
+<a href="#A01"><title>跳转到 A01</title>
+<text x="5925" y="1180" font-size="23" fill="#b96913" font-weight="700" class="label" dominant-baseline="text-before-edge">* → A01</text>
+</a>
+<rect x="4283" y="1223" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="4303" y="1225" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct ggml_hash_set hash_set;</text>
+<a href="#S04"><title>跳转到 S04</title>
+<text x="5925" y="1225" font-size="23" fill="#2266c2" font-weight="700" class="label" dominant-baseline="text-before-edge">◇ → S04</text>
+</a>
+<text x="4303" y="1270" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int * hv_tensor_backend_ids;</text>
+<rect x="4283" y="1313" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="4303" y="1315" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct ggml_tensor ** hv_tensor_copies;</text>
+<a href="#T01"><title>跳转到 T01</title>
+<text x="5925" y="1315" font-size="23" fill="#087f8c" font-weight="700" class="label" dominant-baseline="text-before-edge">* → T01</text>
+</a>
+<text x="4303" y="1360" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int * node_backend_ids;</text>
+<text x="4303" y="1405" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int * leaf_backend_ids;</text>
+<text x="4303" y="1450" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int * prev_node_backend_ids;</text>
+<text x="4303" y="1495" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int * prev_leaf_backend_ids;</text>
+<rect x="4283" y="1538" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="4303" y="1540" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct ggml_cgraph graph;</text>
+<a href="#S03"><title>跳转到 S03</title>
+<text x="5925" y="1540" font-size="23" fill="#2266c2" font-weight="700" class="label" dominant-baseline="text-before-edge">◇ → S03</text>
+</a>
+<rect x="4283" y="1583" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="4303" y="1585" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct ggml_backend_sched_split * splits;</text>
+<a href="#S02"><title>跳转到 S02</title>
+<text x="5925" y="1585" font-size="23" fill="#2266c2" font-weight="700" class="label" dominant-baseline="text-before-edge">* → S02</text>
+</a>
+<text x="4303" y="1630" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int n_splits;</text>
+<text x="4303" y="1675" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int splits_capacity;</text>
+<text x="4303" y="1720" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int n_copies;</text>
+<text x="4303" y="1765" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int cur_copy;</text>
+<text x="4303" y="1810" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int next_copy;</text>
+<rect x="4283" y="1853" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="4303" y="1855" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">ggml_backend_event_t events[GGML_SCHED_MAX_BACKENDS][GGML_SCHED_MAX_COPIES];</text>
+<a href="#B07"><title>跳转到 B07</title>
+<text x="5925" y="1855" font-size="23" fill="#7450b6" font-weight="700" class="label" dominant-baseline="text-before-edge">* → B07</text>
+</a>
+<rect x="4283" y="1898" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="4303" y="1900" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct ggml_tensor ** graph_inputs;</text>
+<a href="#T01"><title>跳转到 T01</title>
+<text x="5925" y="1900" font-size="23" fill="#087f8c" font-weight="700" class="label" dominant-baseline="text-before-edge">* → T01</text>
+</a>
+<text x="4303" y="1945" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int n_graph_inputs;</text>
+<text x="4303" y="1990" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int graph_inputs_capacity;</text>
+<rect x="4283" y="2033" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="4303" y="2035" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct ggml_context * ctx;</text>
+<a href="#S05"><title>跳转到 S05</title>
+<text x="5925" y="2035" font-size="23" fill="#2266c2" font-weight="700" class="label" dominant-baseline="text-before-edge">* → S05</text>
+</a>
+<text x="4303" y="2080" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">ggml_backend_sched_eval_callback callback_eval;</text>
+<text x="4303" y="2125" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">void * callback_eval_user_data;</text>
+<text x="4303" y="2170" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">char * context_buffer;</text>
+<text x="4303" y="2215" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">size_t context_buffer_size;</text>
+<text x="4303" y="2260" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">bool op_offload;</text>
+<text x="4303" y="2305" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int debug;</text>
+<text x="4303" y="2350" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int debug_realloc;</text>
+<text x="4303" y="2395" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int debug_graph_size;</text>
+<text x="4303" y="2440" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int debug_prev_graph_size;</text>
+</g>
+<g id="S02" class="node">
+<rect x="4280" y="2569" width="1800" height="485" rx="12" fill="#ffffff" stroke="#ced8e6" stroke-width="2"/>
+<rect x="4280" y="2569" width="1800" height="60" rx="10" fill="#2266c2" stroke="none" stroke-width="1"/>
+<text x="4303" y="2579" font-size="30" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">S02</text>
+<text x="4402" y="2581" font-size="29" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">struct ggml_backend_sched_split</text>
+<text x="4303" y="2644" font-size="24" fill="#63758d" font-weight="400" class="mono" dominant-baseline="text-before-edge">src/ggml-backend.cpp:775</text>
+<text x="4303" y="2680" font-size="25" fill="#2266c2" font-weight="400" class="label" dominant-baseline="text-before-edge">一个切分区间；graph 是内嵌的图视图</text>
+<text x="4303" y="2719" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int backend_id;</text>
+<text x="4303" y="2764" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int i_start;</text>
+<text x="4303" y="2809" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int i_end;</text>
+<rect x="4283" y="2852" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="4303" y="2854" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct ggml_tensor ** inputs;</text>
+<a href="#T01"><title>跳转到 T01</title>
+<text x="5925" y="2854" font-size="23" fill="#087f8c" font-weight="700" class="label" dominant-baseline="text-before-edge">* → T01</text>
+</a>
+<text x="4303" y="2899" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int n_inputs;</text>
+<text x="4303" y="2944" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int inputs_capacity;</text>
+<rect x="4283" y="2987" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="4303" y="2989" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct ggml_cgraph graph;</text>
+<a href="#S03"><title>跳转到 S03</title>
+<text x="5925" y="2989" font-size="23" fill="#2266c2" font-weight="700" class="label" dominant-baseline="text-before-edge">◇ → S03</text>
+</a>
+</g>
+<g id="S03" class="node">
+<rect x="4280" y="3118" width="1800" height="665" rx="12" fill="#ffffff" stroke="#ced8e6" stroke-width="2"/>
+<rect x="4280" y="3118" width="1800" height="60" rx="10" fill="#2266c2" stroke="none" stroke-width="1"/>
+<text x="4303" y="3128" font-size="30" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">S03</text>
+<text x="4402" y="3130" font-size="29" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">struct ggml_cgraph</text>
+<text x="4303" y="3193" font-size="24" fill="#63758d" font-weight="400" class="mono" dominant-baseline="text-before-edge">src/ggml-impl.h:356</text>
+<text x="4303" y="3229" font-size="25" fill="#2266c2" font-weight="400" class="label" dominant-baseline="text-before-edge">图节点、叶子、梯度与访问集合</text>
+<text x="4303" y="3268" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int size;</text>
+<text x="4303" y="3313" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int n_nodes;</text>
+<text x="4303" y="3358" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int n_leafs;</text>
+<rect x="4283" y="3401" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="4303" y="3403" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct ggml_tensor ** nodes;</text>
+<a href="#T01"><title>跳转到 T01</title>
+<text x="5925" y="3403" font-size="23" fill="#087f8c" font-weight="700" class="label" dominant-baseline="text-before-edge">* → T01</text>
+</a>
+<rect x="4283" y="3446" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="4303" y="3448" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct ggml_tensor ** grads;</text>
+<a href="#T01"><title>跳转到 T01</title>
+<text x="5925" y="3448" font-size="23" fill="#087f8c" font-weight="700" class="label" dominant-baseline="text-before-edge">* → T01</text>
+</a>
+<rect x="4283" y="3491" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="4303" y="3493" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct ggml_tensor ** grad_accs;</text>
+<a href="#T01"><title>跳转到 T01</title>
+<text x="5925" y="3493" font-size="23" fill="#087f8c" font-weight="700" class="label" dominant-baseline="text-before-edge">* → T01</text>
+</a>
+<rect x="4283" y="3536" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="4303" y="3538" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct ggml_tensor ** leafs;</text>
+<a href="#T01"><title>跳转到 T01</title>
+<text x="5925" y="3538" font-size="23" fill="#087f8c" font-weight="700" class="label" dominant-baseline="text-before-edge">* → T01</text>
+</a>
+<text x="4303" y="3583" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int32_t * use_counts;</text>
+<rect x="4283" y="3626" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="4303" y="3628" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct ggml_hash_set visited_hash_set;</text>
+<a href="#S04"><title>跳转到 S04</title>
+<text x="5925" y="3628" font-size="23" fill="#2266c2" font-weight="700" class="label" dominant-baseline="text-before-edge">◇ → S04</text>
+</a>
+<text x="4303" y="3673" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">enum ggml_cgraph_eval_order order;</text>
+<text x="4303" y="3718" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">uint64_t uid;</text>
+</g>
+<g id="S04" class="node">
+<rect x="4280" y="3847" width="1800" height="305" rx="12" fill="#ffffff" stroke="#ced8e6" stroke-width="2"/>
+<rect x="4280" y="3847" width="1800" height="60" rx="10" fill="#2266c2" stroke="none" stroke-width="1"/>
+<text x="4303" y="3857" font-size="30" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">S04</text>
+<text x="4402" y="3859" font-size="29" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">struct ggml_hash_set</text>
+<text x="4303" y="3922" font-size="24" fill="#63758d" font-weight="400" class="mono" dominant-baseline="text-before-edge">src/ggml-impl.h:250</text>
+<text x="4303" y="3958" font-size="25" fill="#2266c2" font-weight="400" class="label" dominant-baseline="text-before-edge">集合键是 tensor 指针；used 是位图</text>
+<text x="4303" y="3997" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">size_t size;</text>
+<text x="4303" y="4042" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">ggml_bitset_t * used;</text>
+<rect x="4283" y="4085" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="4303" y="4087" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct ggml_tensor ** keys;</text>
+<a href="#T01"><title>跳转到 T01</title>
+<text x="5925" y="4087" font-size="23" fill="#087f8c" font-weight="700" class="label" dominant-baseline="text-before-edge">* → T01</text>
+</a>
+</g>
+<g id="S05" class="node">
+<rect x="4280" y="4216" width="1800" height="485" rx="12" fill="#ffffff" stroke="#ced8e6" stroke-width="2"/>
+<rect x="4280" y="4216" width="1800" height="60" rx="10" fill="#2266c2" stroke="none" stroke-width="1"/>
+<text x="4303" y="4226" font-size="30" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">S05</text>
+<text x="4402" y="4228" font-size="29" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">struct ggml_context</text>
+<text x="4303" y="4291" font-size="24" fill="#63758d" font-weight="400" class="mono" dominant-baseline="text-before-edge">src/ggml.c:973</text>
+<text x="4303" y="4327" font-size="25" fill="#2266c2" font-weight="400" class="label" dominant-baseline="text-before-edge">描述对象所在的内存池与对象链表</text>
+<text x="4303" y="4366" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">size_t mem_size;</text>
+<text x="4303" y="4411" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">void * mem_buffer;</text>
+<text x="4303" y="4456" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">bool mem_buffer_owned;</text>
+<text x="4303" y="4501" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">bool no_alloc;</text>
+<text x="4303" y="4546" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int n_objects;</text>
+<rect x="4283" y="4589" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="4303" y="4591" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct ggml_object * objects_begin;</text>
+<a href="#S06"><title>跳转到 S06</title>
+<text x="5925" y="4591" font-size="23" fill="#2266c2" font-weight="700" class="label" dominant-baseline="text-before-edge">* → S06</text>
+</a>
+<rect x="4283" y="4634" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="4303" y="4636" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct ggml_object * objects_end;</text>
+<a href="#S06"><title>跳转到 S06</title>
+<text x="5925" y="4636" font-size="23" fill="#2266c2" font-weight="700" class="label" dominant-baseline="text-before-edge">* → S06</text>
+</a>
+</g>
+<g id="S06" class="node">
+<rect x="4280" y="4765" width="1800" height="395" rx="12" fill="#ffffff" stroke="#ced8e6" stroke-width="2"/>
+<rect x="4280" y="4765" width="1800" height="60" rx="10" fill="#2266c2" stroke="none" stroke-width="1"/>
+<text x="4303" y="4775" font-size="30" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">S06</text>
+<text x="4402" y="4777" font-size="29" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">struct ggml_object</text>
+<text x="4303" y="4840" font-size="24" fill="#63758d" font-weight="400" class="mono" dominant-baseline="text-before-edge">src/ggml.c:958</text>
+<text x="4303" y="4876" font-size="25" fill="#2266c2" font-weight="400" class="label" dominant-baseline="text-before-edge">对象管理头；next 形成链表</text>
+<text x="4303" y="4915" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">size_t offs;</text>
+<text x="4303" y="4960" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">size_t size;</text>
+<rect x="4283" y="5003" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="4303" y="5005" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct ggml_object * next;</text>
+<a href="#S06"><title>跳转到 S06</title>
+<text x="5925" y="5005" font-size="23" fill="#2266c2" font-weight="700" class="label" dominant-baseline="text-before-edge">* → S06</text>
+</a>
+<text x="4303" y="5050" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">enum ggml_object_type type;</text>
+<text x="4303" y="5095" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">char padding[4];</text>
+</g>
+<g id="A01" class="node">
+<rect x="6360" y="805" width="1800" height="620" rx="12" fill="#ffffff" stroke="#ced8e6" stroke-width="2"/>
+<rect x="6360" y="805" width="1800" height="60" rx="10" fill="#b96913" stroke="none" stroke-width="1"/>
+<text x="6383" y="815" font-size="30" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">A01</text>
+<text x="6482" y="817" font-size="29" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">struct ggml_gallocr</text>
+<text x="6383" y="880" font-size="24" fill="#63758d" font-weight="400" class="mono" dominant-baseline="text-before-edge">src/ggml-alloc.c:482</text>
+<text x="6383" y="916" font-size="25" fill="#b96913" font-weight="400" class="label" dominant-baseline="text-before-edge">多缓冲区分配、哈希状态与节点分配记录</text>
+<rect x="6363" y="953" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="6383" y="955" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">ggml_backend_buffer_type_t * bufts;</text>
+<a href="#T03"><title>跳转到 T03</title>
+<text x="8005" y="955" font-size="23" fill="#087f8c" font-weight="700" class="label" dominant-baseline="text-before-edge">* → T03</text>
+</a>
+<rect x="6363" y="998" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="6383" y="1000" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct vbuffer ** buffers;</text>
+<a href="#A02"><title>跳转到 A02</title>
+<text x="8005" y="1000" font-size="23" fill="#b96913" font-weight="700" class="label" dominant-baseline="text-before-edge">* → A02</text>
+</a>
+<rect x="6363" y="1043" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="6383" y="1045" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct ggml_dyn_tallocr ** buf_tallocs;</text>
+<a href="#A03"><title>跳转到 A03</title>
+<text x="8005" y="1045" font-size="23" fill="#b96913" font-weight="700" class="label" dominant-baseline="text-before-edge">* → A03</text>
+</a>
+<text x="6383" y="1090" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int n_buffers;</text>
+<rect x="6363" y="1133" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="6383" y="1135" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct ggml_hash_set hash_set;</text>
+<a href="#S04"><title>跳转到 S04</title>
+<text x="8005" y="1135" font-size="23" fill="#2266c2" font-weight="700" class="label" dominant-baseline="text-before-edge">◇ → S04</text>
+</a>
+<rect x="6363" y="1178" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="6383" y="1180" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct hash_node * hash_values;</text>
+<a href="#A07"><title>跳转到 A07</title>
+<text x="8005" y="1180" font-size="23" fill="#b96913" font-weight="700" class="label" dominant-baseline="text-before-edge">* → A07</text>
+</a>
+<rect x="6363" y="1223" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="6383" y="1225" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct node_alloc * node_allocs;</text>
+<a href="#A08"><title>跳转到 A08</title>
+<text x="8005" y="1225" font-size="23" fill="#b96913" font-weight="700" class="label" dominant-baseline="text-before-edge">* → A08</text>
+</a>
+<text x="6383" y="1270" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int n_nodes;</text>
+<rect x="6363" y="1313" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="6383" y="1315" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct leaf_alloc * leaf_allocs;</text>
+<a href="#A09"><title>跳转到 A09</title>
+<text x="8005" y="1315" font-size="23" fill="#b96913" font-weight="700" class="label" dominant-baseline="text-before-edge">* → A09</text>
+</a>
+<text x="6383" y="1360" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int n_leafs;</text>
+</g>
+<g id="A02" class="node">
+<rect x="6360" y="1489" width="1800" height="215" rx="12" fill="#ffffff" stroke="#ced8e6" stroke-width="2"/>
+<rect x="6360" y="1489" width="1800" height="60" rx="10" fill="#b96913" stroke="none" stroke-width="1"/>
+<text x="6383" y="1499" font-size="30" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">A02</text>
+<text x="6482" y="1501" font-size="29" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">struct vbuffer</text>
+<text x="6383" y="1564" font-size="24" fill="#63758d" font-weight="400" class="mono" dominant-baseline="text-before-edge">src/ggml-alloc.c:398</text>
+<text x="6383" y="1600" font-size="25" fill="#b96913" font-weight="400" class="label" dominant-baseline="text-before-edge">当前版本：逻辑缓冲区由多块 chunk 组成</text>
+<rect x="6363" y="1637" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="6383" y="1639" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">ggml_backend_buffer_t chunks[GGML_VBUFFER_MAX_CHUNKS];</text>
+<a href="#T02"><title>跳转到 T02</title>
+<text x="8005" y="1639" font-size="23" fill="#087f8c" font-weight="700" class="label" dominant-baseline="text-before-edge">* → T02</text>
+</a>
+</g>
+<g id="A03" class="node">
+<rect x="6360" y="1768" width="1800" height="395" rx="12" fill="#ffffff" stroke="#ced8e6" stroke-width="2"/>
+<rect x="6360" y="1768" width="1800" height="60" rx="10" fill="#b96913" stroke="none" stroke-width="1"/>
+<text x="6383" y="1778" font-size="30" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">A03</text>
+<text x="6482" y="1780" font-size="29" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">struct ggml_dyn_tallocr</text>
+<text x="6383" y="1843" font-size="24" fill="#63758d" font-weight="400" class="mono" dominant-baseline="text-before-edge">src/ggml-alloc.c:121</text>
+<text x="6383" y="1879" font-size="25" fill="#b96913" font-weight="400" class="label" dominant-baseline="text-before-edge">按对齐要求管理多个 chunk 的空闲空间</text>
+<text x="6383" y="1918" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">size_t alignment;</text>
+<text x="6383" y="1963" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">size_t max_chunk_size;</text>
+<rect x="6363" y="2006" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="6383" y="2008" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct tallocr_chunk * chunks[GGML_VBUFFER_MAX_CHUNKS];</text>
+<a href="#A05"><title>跳转到 A05</title>
+<text x="8005" y="2008" font-size="23" fill="#b96913" font-weight="700" class="label" dominant-baseline="text-before-edge">* → A05</text>
+</a>
+<text x="6383" y="2053" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int n_chunks;</text>
+<rect x="6363" y="2096" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="6383" y="2098" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct { ... } allocated_tensors[1024];</text>
+<a href="#A04"><title>跳转到 A04</title>
+<text x="8005" y="2098" font-size="23" fill="#b96913" font-weight="700" class="label" dominant-baseline="text-before-edge">if → A04</text>
+</a>
+</g>
+<g id="A04" class="node">
+<rect x="6360" y="2227" width="1800" height="260" rx="12" fill="#ffffff" stroke="#ced8e6" stroke-width="2"/>
+<rect x="6360" y="2227" width="1800" height="60" rx="10" fill="#b96913" stroke="none" stroke-width="1"/>
+<text x="6383" y="2237" font-size="30" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">A04</text>
+<text x="6482" y="2239" font-size="29" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">anonymous struct  (allocated_tensors[])</text>
+<text x="6383" y="2302" font-size="24" fill="#63758d" font-weight="400" class="mono" dominant-baseline="text-before-edge">src/ggml-alloc.c:129</text>
+<text x="6383" y="2338" font-size="25" fill="#b96913" font-weight="400" class="label" dominant-baseline="text-before-edge">匿名结构体；仅 GGML_ALLOCATOR_DEBUG 启用时存在</text>
+<rect x="6363" y="2375" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="6383" y="2377" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">const struct ggml_tensor * tensor;</text>
+<a href="#T01"><title>跳转到 T01</title>
+<text x="8005" y="2377" font-size="23" fill="#087f8c" font-weight="700" class="label" dominant-baseline="text-before-edge">* → T01</text>
+</a>
+<rect x="6363" y="2420" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="6383" y="2422" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct buffer_address addr;</text>
+<a href="#A11"><title>跳转到 A11</title>
+<text x="8005" y="2422" font-size="23" fill="#b96913" font-weight="700" class="label" dominant-baseline="text-before-edge">◇ → A11</text>
+</a>
+</g>
+<g id="A05" class="node">
+<rect x="6360" y="2551" width="1800" height="305" rx="12" fill="#ffffff" stroke="#ced8e6" stroke-width="2"/>
+<rect x="6360" y="2551" width="1800" height="60" rx="10" fill="#b96913" stroke="none" stroke-width="1"/>
+<text x="6383" y="2561" font-size="30" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">A05</text>
+<text x="6482" y="2563" font-size="29" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">struct tallocr_chunk</text>
+<text x="6383" y="2626" font-size="24" fill="#63758d" font-weight="400" class="mono" dominant-baseline="text-before-edge">src/ggml-alloc.c:115</text>
+<text x="6383" y="2662" font-size="25" fill="#b96913" font-weight="400" class="label" dominant-baseline="text-before-edge">单个 chunk 的空闲块表</text>
+<rect x="6363" y="2699" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="6383" y="2701" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct free_block free_blocks[MAX_FREE_BLOCKS];</text>
+<a href="#A06"><title>跳转到 A06</title>
+<text x="8005" y="2701" font-size="23" fill="#b96913" font-weight="700" class="label" dominant-baseline="text-before-edge">◇ → A06</text>
+</a>
+<text x="6383" y="2746" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int n_free_blocks;</text>
+<text x="6383" y="2791" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">size_t max_size;</text>
+</g>
+<g id="A06" class="node">
+<rect x="6360" y="2920" width="1800" height="260" rx="12" fill="#ffffff" stroke="#ced8e6" stroke-width="2"/>
+<rect x="6360" y="2920" width="1800" height="60" rx="10" fill="#b96913" stroke="none" stroke-width="1"/>
+<text x="6383" y="2930" font-size="30" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">A06</text>
+<text x="6482" y="2932" font-size="29" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">struct free_block</text>
+<text x="6383" y="2995" font-size="24" fill="#63758d" font-weight="400" class="mono" dominant-baseline="text-before-edge">src/ggml-alloc.c:110</text>
+<text x="6383" y="3031" font-size="25" fill="#b96913" font-weight="400" class="label" dominant-baseline="text-before-edge">全部成员均为基础类型：到此结束</text>
+<text x="6383" y="3070" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">size_t offset;</text>
+<text x="6383" y="3115" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">size_t size;</text>
+</g>
+<g id="A07" class="node">
+<rect x="6360" y="3244" width="1800" height="395" rx="12" fill="#ffffff" stroke="#ced8e6" stroke-width="2"/>
+<rect x="6360" y="3244" width="1800" height="60" rx="10" fill="#b96913" stroke="none" stroke-width="1"/>
+<text x="6383" y="3254" font-size="30" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">A07</text>
+<text x="6482" y="3256" font-size="29" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">struct hash_node</text>
+<text x="6383" y="3319" font-size="24" fill="#63758d" font-weight="400" class="mono" dominant-baseline="text-before-edge">src/ggml-alloc.c:459</text>
+<text x="6383" y="3355" font-size="25" fill="#b96913" font-weight="400" class="label" dominant-baseline="text-before-edge">张量引用计数与分配状态</text>
+<text x="6383" y="3394" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int n_children;</text>
+<text x="6383" y="3439" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int n_views;</text>
+<text x="6383" y="3484" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int buffer_id;</text>
+<rect x="6363" y="3527" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="6383" y="3529" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct buffer_address addr;</text>
+<a href="#A11"><title>跳转到 A11</title>
+<text x="8005" y="3529" font-size="23" fill="#b96913" font-weight="700" class="label" dominant-baseline="text-before-edge">◇ → A11</text>
+</a>
+<text x="6383" y="3574" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">bool allocated;</text>
+</g>
+<g id="A08" class="node">
+<rect x="6360" y="3703" width="1800" height="260" rx="12" fill="#ffffff" stroke="#ced8e6" stroke-width="2"/>
+<rect x="6360" y="3703" width="1800" height="60" rx="10" fill="#b96913" stroke="none" stroke-width="1"/>
+<text x="6383" y="3713" font-size="30" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">A08</text>
+<text x="6482" y="3715" font-size="29" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">struct node_alloc</text>
+<text x="6383" y="3778" font-size="24" fill="#63758d" font-weight="400" class="mono" dominant-baseline="text-before-edge">src/ggml-alloc.c:477</text>
+<text x="6383" y="3814" font-size="25" fill="#b96913" font-weight="400" class="label" dominant-baseline="text-before-edge">运算结果与各输入的分配记录</text>
+<rect x="6363" y="3851" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="6383" y="3853" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct tensor_alloc dst;</text>
+<a href="#A10"><title>跳转到 A10</title>
+<text x="8005" y="3853" font-size="23" fill="#b96913" font-weight="700" class="label" dominant-baseline="text-before-edge">◇ → A10</text>
+</a>
+<rect x="6363" y="3896" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="6383" y="3898" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct tensor_alloc src[GGML_MAX_SRC];</text>
+<a href="#A10"><title>跳转到 A10</title>
+<text x="8005" y="3898" font-size="23" fill="#b96913" font-weight="700" class="label" dominant-baseline="text-before-edge">◇ → A10</text>
+</a>
+</g>
+<g id="A09" class="node">
+<rect x="6360" y="4027" width="1800" height="215" rx="12" fill="#ffffff" stroke="#ced8e6" stroke-width="2"/>
+<rect x="6360" y="4027" width="1800" height="60" rx="10" fill="#b96913" stroke="none" stroke-width="1"/>
+<text x="6383" y="4037" font-size="30" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">A09</text>
+<text x="6482" y="4039" font-size="29" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">struct leaf_alloc</text>
+<text x="6383" y="4102" font-size="24" fill="#63758d" font-weight="400" class="mono" dominant-baseline="text-before-edge">src/ggml-alloc.c:473</text>
+<text x="6383" y="4138" font-size="25" fill="#b96913" font-weight="400" class="label" dominant-baseline="text-before-edge">叶子张量的分配记录</text>
+<rect x="6363" y="4175" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="6383" y="4177" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct tensor_alloc leaf;</text>
+<a href="#A10"><title>跳转到 A10</title>
+<text x="8005" y="4177" font-size="23" fill="#b96913" font-weight="700" class="label" dominant-baseline="text-before-edge">◇ → A10</text>
+</a>
+</g>
+<g id="A10" class="node">
+<rect x="6360" y="4306" width="1800" height="305" rx="12" fill="#ffffff" stroke="#ced8e6" stroke-width="2"/>
+<rect x="6360" y="4306" width="1800" height="60" rx="10" fill="#b96913" stroke="none" stroke-width="1"/>
+<text x="6383" y="4316" font-size="30" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">A10</text>
+<text x="6482" y="4318" font-size="29" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">struct tensor_alloc</text>
+<text x="6383" y="4381" font-size="24" fill="#63758d" font-weight="400" class="mono" dominant-baseline="text-before-edge">src/ggml-alloc.c:467</text>
+<text x="6383" y="4417" font-size="25" fill="#b96913" font-weight="400" class="label" dominant-baseline="text-before-edge">记录 buffer_id、相对地址与最大尺寸</text>
+<text x="6383" y="4456" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int buffer_id;</text>
+<rect x="6363" y="4499" width="1794" height="45" rx="0" fill="#f0f5fa" stroke="none" stroke-width="1"/>
+<text x="6383" y="4501" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">struct buffer_address addr;</text>
+<a href="#A11"><title>跳转到 A11</title>
+<text x="8005" y="4501" font-size="23" fill="#b96913" font-weight="700" class="label" dominant-baseline="text-before-edge">◇ → A11</text>
+</a>
+<text x="6383" y="4546" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">size_t size_max;</text>
+</g>
+<g id="A11" class="node">
+<rect x="6360" y="4675" width="1800" height="260" rx="12" fill="#ffffff" stroke="#ced8e6" stroke-width="2"/>
+<rect x="6360" y="4675" width="1800" height="60" rx="10" fill="#b96913" stroke="none" stroke-width="1"/>
+<text x="6383" y="4685" font-size="30" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">A11</text>
+<text x="6482" y="4687" font-size="29" fill="#ffffff" font-weight="700" class="mono" dominant-baseline="text-before-edge">struct buffer_address</text>
+<text x="6383" y="4750" font-size="24" fill="#63758d" font-weight="400" class="mono" dominant-baseline="text-before-edge">src/ggml-alloc.c:99</text>
+<text x="6383" y="4786" font-size="25" fill="#b96913" font-weight="400" class="label" dominant-baseline="text-before-edge">chunk 索引 + chunk 内偏移：到此结束</text>
+<text x="6383" y="4825" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">int chunk;</text>
+<text x="6383" y="4870" font-size="23" fill="#26354a" font-weight="400" class="mono" dominant-baseline="text-before-edge">size_t offset;</text>
+</g>
+<polyline points="1920,1015 1963,1015 1963,1699 1920,1699" fill="none" stroke="#087f8c" stroke-width="3" stroke-linejoin="round" stroke-dasharray="10 7"/>
+<polygon points="1920,1699 1934.609423044997,1692.475832751047 1934.609423044997,1705.524167248953" fill="#087f8c"/>
+<polyline points="1920,1834 1981,1834 1981,2527 1920,2527" fill="none" stroke="#087f8c" stroke-width="3" stroke-linejoin="round" />
+<polygon points="1920,2527 1934.609423044997,2520.4758327510467 1934.609423044997,2533.5241672489533" fill="#087f8c"/>
+<polygon points="1920,1834 1930,1827 1940,1834 1930,1841" fill="#087f8c"/>
+<polyline points="1920,1879 1999,1879 1999,2158 1920,2158" fill="none" stroke="#087f8c" stroke-width="3" stroke-linejoin="round" stroke-dasharray="10 7"/>
+<polygon points="1920,2158 1934.609423044997,2151.4758327510467 1934.609423044997,2164.5241672489533" fill="#087f8c"/>
+<polyline points="1920,2293 2017,2293 2017,3421 1920,3421" fill="none" stroke="#087f8c" stroke-width="3" stroke-linejoin="round" />
+<polygon points="1920,3421 1934.609423044997,3414.4758327510467 1934.609423044997,3427.5241672489533" fill="#087f8c"/>
+<polygon points="1920,2293 1930,2286 1940,2293 1930,2300" fill="#087f8c"/>
+<polyline points="4000,1015 4043,1015 4043,1249 4000,1249" fill="none" stroke="#7450b6" stroke-width="3" stroke-linejoin="round" />
+<polygon points="4000,1249 4014.609423044997,1242.475832751047 4014.609423044997,1255.524167248953" fill="#7450b6"/>
+<polygon points="4000,1015 4010,1008 4020,1015 4010,1022" fill="#7450b6"/>
+<polyline points="4000,1060 4061,1060 4061,2434 4000,2434" fill="none" stroke="#7450b6" stroke-width="3" stroke-linejoin="round" stroke-dasharray="10 7"/>
+<polygon points="4000,2434 4014.609423044997,2427.4758327510467 4014.609423044997,2440.5241672489533" fill="#7450b6"/>
+<polyline points="4000,2569 4079,2569 4079,2803 4000,2803" fill="none" stroke="#7450b6" stroke-width="3" stroke-linejoin="round" />
+<polygon points="4000,2803 4014.609423044997,2796.4758327510467 4014.609423044997,2809.5241672489533" fill="#7450b6"/>
+<polygon points="4000,2569 4010,2562 4020,2569 4010,2576" fill="#7450b6"/>
+<polyline points="4000,2614 4097,2614 4097,3745 4000,3745" fill="none" stroke="#7450b6" stroke-width="3" stroke-linejoin="round" stroke-dasharray="10 7"/>
+<polygon points="4000,3745 4014.609423044997,3738.4758327510467 4014.609423044997,3751.5241672489533" fill="#7450b6"/>
+<polyline points="4000,3925 4115,3925 4115,4114 4000,4114" fill="none" stroke="#7450b6" stroke-width="3" stroke-linejoin="round" />
+<polygon points="4000,4114 4014.609423044997,4107.475832751047 4014.609423044997,4120.524167248953" fill="#7450b6"/>
+<polygon points="4000,3925 4010,3918 4020,3925 4010,3932" fill="#7450b6"/>
+<polyline points="6080,1240 6123,1240 6123,3877 6080,3877" fill="none" stroke="#2266c2" stroke-width="3" stroke-linejoin="round" />
+<polygon points="6080,3877 6094.609423044997,3870.4758327510467 6094.609423044997,3883.5241672489533" fill="#2266c2"/>
+<polygon points="6080,1240 6090,1233 6100,1240 6090,1247" fill="#2266c2"/>
+<polyline points="6080,1555 6141,1555 6141,3148 6080,3148" fill="none" stroke="#2266c2" stroke-width="3" stroke-linejoin="round" />
+<polygon points="6080,3148 6094.609423044997,3141.4758327510467 6094.609423044997,3154.5241672489533" fill="#2266c2"/>
+<polygon points="6080,1555 6090,1548 6100,1555 6090,1562" fill="#2266c2"/>
+<polyline points="6080,1600 6159,1600 6159,2599 6080,2599" fill="none" stroke="#2266c2" stroke-width="3" stroke-linejoin="round" stroke-dasharray="10 7"/>
+<polygon points="6080,2599 6094.609423044997,2592.4758327510467 6094.609423044997,2605.5241672489533" fill="#2266c2"/>
+<polyline points="6080,2050 6177,2050 6177,4246 6080,4246" fill="none" stroke="#2266c2" stroke-width="3" stroke-linejoin="round" stroke-dasharray="10 7"/>
+<polygon points="6080,4246 6094.609423044997,4239.475832751047 6094.609423044997,4252.524167248953" fill="#2266c2"/>
+<polyline points="6080,4606 6195,4606 6195,4795 6080,4795" fill="none" stroke="#2266c2" stroke-width="3" stroke-linejoin="round" stroke-dasharray="10 7"/>
+<polygon points="6080,4795 6094.609423044997,4788.475832751047 6094.609423044997,4801.524167248953" fill="#2266c2"/>
+<polyline points="8160,1015 8203,1015 8203,1519 8160,1519" fill="none" stroke="#b96913" stroke-width="3" stroke-linejoin="round" stroke-dasharray="10 7"/>
+<polygon points="8160,1519 8174.609423044997,1512.475832751047 8174.609423044997,1525.524167248953" fill="#b96913"/>
+<polyline points="8160,1060 8221,1060 8221,1798 8160,1798" fill="none" stroke="#b96913" stroke-width="3" stroke-linejoin="round" stroke-dasharray="10 7"/>
+<polygon points="8160,1798 8174.609423044997,1791.475832751047 8174.609423044997,1804.524167248953" fill="#b96913"/>
+<polyline points="8160,1195 8239,1195 8239,3274 8160,3274" fill="none" stroke="#b96913" stroke-width="3" stroke-linejoin="round" stroke-dasharray="10 7"/>
+<polygon points="8160,3274 8174.609423044997,3267.4758327510467 8174.609423044997,3280.5241672489533" fill="#b96913"/>
+<polyline points="8160,1240 8257,1240 8257,3733 8160,3733" fill="none" stroke="#b96913" stroke-width="3" stroke-linejoin="round" stroke-dasharray="10 7"/>
+<polygon points="8160,3733 8174.609423044997,3726.4758327510467 8174.609423044997,3739.5241672489533" fill="#b96913"/>
+<polyline points="8160,1330 8275,1330 8275,4057 8160,4057" fill="none" stroke="#b96913" stroke-width="3" stroke-linejoin="round" stroke-dasharray="10 7"/>
+<polygon points="8160,4057 8174.609423044997,4050.4758327510467 8174.609423044997,4063.5241672489533" fill="#b96913"/>
+<polyline points="8160,2023 8185,2023 8185,2581 8160,2581" fill="none" stroke="#b96913" stroke-width="3" stroke-linejoin="round" stroke-dasharray="10 7"/>
+<polygon points="8160,2581 8174.609423044997,2574.4758327510467 8174.609423044997,2587.5241672489533" fill="#b96913"/>
+<polyline points="8160,2113 8203,2113 8203,2257 8160,2257" fill="none" stroke="#b96913" stroke-width="3" stroke-linejoin="round" stroke-dasharray="10 7"/>
+<polygon points="8160,2257 8174.609423044997,2250.4758327510467 8174.609423044997,2263.5241672489533" fill="#b96913"/>
+<polygon points="8160,2113 8170,2106 8180,2113 8170,2120" fill="#b96913"/>
+<polyline points="8160,2437 8221,2437 8221,4705 8160,4705" fill="none" stroke="#b96913" stroke-width="3" stroke-linejoin="round" />
+<polygon points="8160,4705 8174.609423044997,4698.475832751047 8174.609423044997,4711.524167248953" fill="#b96913"/>
+<polygon points="8160,2437 8170,2430 8180,2437 8170,2444" fill="#b96913"/>
+<polyline points="8160,2716 8239,2716 8239,2950 8160,2950" fill="none" stroke="#b96913" stroke-width="3" stroke-linejoin="round" />
+<polygon points="8160,2950 8174.609423044997,2943.4758327510467 8174.609423044997,2956.5241672489533" fill="#b96913"/>
+<polygon points="8160,2716 8170,2709 8180,2716 8170,2723" fill="#b96913"/>
+<polyline points="8160,3868 8257,3868 8257,4336 8160,4336" fill="none" stroke="#b96913" stroke-width="3" stroke-linejoin="round" />
+<polygon points="8160,4336 8174.609423044997,4329.475832751047 8174.609423044997,4342.524167248953" fill="#b96913"/>
+<polygon points="8160,3868 8170,3861 8180,3868 8170,3875" fill="#b96913"/>
+<polyline points="1928,355 1980,355 1980,634 1020,634 1020,700" fill="none" stroke="#087f8c" stroke-width="3" stroke-linejoin="round" stroke-dasharray="10 7"/>
+<polygon points="1020,700 1013.4758327510468,685.3905769550031 1026.524167248953,685.3905769550031" fill="#087f8c"/>
+<polyline points="1928,445 2015,445 2015,652 3100,652 3100,700" fill="none" stroke="#7450b6" stroke-width="3" stroke-linejoin="round" stroke-dasharray="10 7"/>
+<polygon points="3100,700 3093.4758327510467,685.3905769550031 3106.5241672489533,685.3905769550031" fill="#7450b6"/>
+<polyline points="1928,535 2050,535 2050,670 5180,670 5180,700" fill="none" stroke="#2266c2" stroke-width="3" stroke-linejoin="round" stroke-dasharray="10 7"/>
+<polygon points="5180,700 5173.475832751047,685.3905769550031 5186.524167248953,685.3905769550031" fill="#2266c2"/>
+<polyline points="6080,1195 6285,1195 6285,835 6360,835" fill="none" stroke="#b96913" stroke-width="3" stroke-linejoin="round" stroke-dasharray="10 7"/>
+<polygon points="6360,835 6345.390576955003,841.5241672489532 6345.390576955003,828.4758327510468" fill="#b96913"/>
+<polyline points="120,1285 90,1285 90,832 120,832" fill="none" stroke="#087f8c" stroke-width="3" stroke-linejoin="round" stroke-dasharray="10 7"/>
+<polygon points="120,832 105.39057695500307,838.5241672489532 105.39057695500307,825.4758327510468" fill="#087f8c"/>
+<polyline points="120,1330 68,1330 68,850 120,850" fill="none" stroke="#087f8c" stroke-width="3" stroke-linejoin="round" stroke-dasharray="10 7"/>
+<polygon points="120,850 105.39057695500307,856.5241672489532 105.39057695500307,843.4758327510468" fill="#087f8c"/>
+<polyline points="4280,5020 4250,5020 4250,4792 4280,4792" fill="none" stroke="#2266c2" stroke-width="3" stroke-linejoin="round" stroke-dasharray="10 7"/>
+<polygon points="4280,4792 4265.390576955003,4798.524167248953 4265.390576955003,4785.475832751047" fill="#2266c2"/>
+<rect x="120" y="5240" width="8160" height="335" rx="16" fill="#e8eef6" stroke="none" stroke-width="1"/>
+<text x="155" y="5260" font-size="33" fill="#26354a" font-weight="700" class="label" dominant-baseline="text-before-edge">typedef 与终点说明</text>
+<text x="155" y="5317" font-size="24" fill="#354861" font-weight="400" class="mono" dominant-baseline="text-before-edge">ggml_backend_t = struct ggml_backend *    ggml_backend_sched_t = struct ggml_backend_sched *    ggml_gallocr_t = struct ggml_gallocr *</text>
+<text x="155" y="5350" font-size="24" fill="#354861" font-weight="400" class="mono" dominant-baseline="text-before-edge">ggml_backend_buffer_t = struct ggml_backend_buffer *    ggml_backend_buffer_type_t = struct ggml_backend_buffer_type *</text>
+<text x="155" y="5383" font-size="24" fill="#354861" font-weight="400" class="mono" dominant-baseline="text-before-edge">ggml_backend_dev_t = struct ggml_backend_device *    ggml_backend_reg_t = struct ggml_backend_reg *    ggml_backend_event_t = struct ggml_backend_event *</text>
+<text x="155" y="5416" font-size="24" fill="#354861" font-weight="400" class="mono" dominant-baseline="text-before-edge">ggml_bitset_t = uint32_t    ggml_guid = uint8_t[16]    ggml_guid_t = ggml_guid * = uint8_t (*)[16]    ggml_backend_graph_plan_t = void *</text>
+<text x="155" y="5449" font-size="24" fill="#354861" font-weight="400" class="label" dominant-baseline="text-before-edge">GGML_MAX_DIMS=4    GGML_MAX_SRC=10    GGML_MAX_OP_PARAMS=64    GGML_MAX_NAME=64（默认）    GGML_SCHED_MAX_BACKENDS=16（默认）</text>
+<text x="155" y="5482" font-size="24" fill="#354861" font-weight="400" class="label" dominant-baseline="text-before-edge">GGML_SCHED_MAX_COPIES=4（默认）    GGML_VBUFFER_MAX_CHUNKS=16    MAX_FREE_BLOCKS=256    callback_eval: bool (*)(struct ggml_tensor *, bool, void *)</text>
+<text x="155" y="5515" font-size="24" fill="#354861" font-weight="400" class="label" dominant-baseline="text-before-edge">void * 无静态结构体类型：具体 context 随后端实现而变，不推断为 CPU 或 GPU 私有对象。数组保留源码长度宏；枚举作为值类型终止展开。</text>
+</svg>

@@ -722,7 +722,7 @@ extern "C" {
         enum ggml_type type;       // Tensor 的数据类型，Tensor 中元素的存储格式
 
         struct ggml_backend_buffer * buffer;    // Tensor 的数据到底由谁管理 （cpu RAM / CUDA VRAM / Metal Buffer)
-        // ne[0] = 4, ne[1] = 3, 3 行 4 列
+        // ne[0] = 4, ne[1] = 3, 3 行 4 列 （x, y, z 的形式）
         int64_t ne[GGML_MAX_DIMS]; // number of elements， tensor 的 shape, ne[0] 通常对应内存中最连续的那个维度，单位是元素个数
         
         /*

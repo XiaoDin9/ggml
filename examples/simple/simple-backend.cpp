@@ -99,7 +99,7 @@ struct ggml_cgraph * build_graph(simple_model& model) {
     model.a = ggml_new_tensor_2d(ctx, GGML_TYPE_F32, cols_A, rows_A);
     model.b = ggml_new_tensor_2d(ctx, GGML_TYPE_F32, cols_B, rows_B);
 
-    // result = a*b^T
+    // result = b * a^T
     struct ggml_tensor * result = ggml_mul_mat(ctx, model.a, model.b);
 
     // build operations nodes
