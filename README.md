@@ -25,6 +25,14 @@ cmake ..
 cmake --build . --config Release -j 8
 ```
 
+```bash
+cmake -S . -B build-debug \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DGGML_BUILD_EXAMPLES=ON
+
+cmake --build build-debug --parallel
+```
+
 For a minimal, fully commented example (matrix multiplication), see [examples/simple](examples/simple).
 
 ## Description
