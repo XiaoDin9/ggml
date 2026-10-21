@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="500" viewBox="0 0 1100 500">
+<title>simple-backend：可折叠调用树</title>
+<desc>在浏览器中独立打开。点击节点上的加减号逐层展开或收起；点击函数名称或连线在 VS Code 打开实现。</desc>
+<style>
+text{font-family:Consolas,"Microsoft YaHei",monospace;pointer-events:none}a{cursor:pointer}.toggle,.tool{cursor:pointer}.toggle:hover rect,.tool:hover rect{fill:#3b5877}.node:hover .box{stroke:#f3c285;stroke-width:2}.wire{fill:none;stroke-width:1.6}.hit{fill:none;stroke:transparent;stroke-width:16}a:hover .wire{stroke:#f2be7c;stroke-width:3}.caption{fill:#91a8c0;font-size:12px}
+</style>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#99acc2"/></marker></defs>
+<rect id="background" width="100%" height="100%" fill="#10151d"/>
+<text x="35" y="32" fill="#edc28e" font-size="19">simple-backend · main 可折叠调用树</text>
+<text x="35" y="56" class="caption">＋ / − 逐层展开与收起 · 点击函数名或连线跳转 VS Code · 同名函数按调用分支分别显示</text>
+<g id="svg-tools" transform="translate(35 72)"></g>
+<g id="svg-tree" transform="translate(0 50)"></g>
+<g id="svg-fallback">
+  <a href="__SVG_MAIN_URI__"><rect x="60" y="150" width="360" height="130" rx="9" fill="#1b283a" stroke="#eab77b"/><text x="75" y="181" fill="#eab77b" font-size="16">main</text><text x="75" y="214" fill="#c8d5e4" font-size="13">初始化 → 建图 → 计算 → 读取 → 释放</text><text x="75" y="246" class="caption">simple-backend.cpp:__SVG_MAIN_LINE__</text></a>
+  <text x="60" y="325" class="caption">图片预览可能禁用 SVG 脚本。用浏览器独立打开本文件可逐层展开，或打开同目录 index.html。</text>
+</g>
+<script><![CDATA[
+__TREE_ENGINE__
+const DATA=__SVG_DATA__;
+const T=CallTree,NS='http://www.w3.org/2000/svg',root=document.documentElement,out=T.index(DATA.edges);
+const state={expanded:new Set(),mode:'tree',chain:[],nodes:[]};
+document.getElementById('svg-fallback').remove();
+function el(tag,attrs={},children=[]){const e=document.createElementNS(NS,tag);for(const[k,v]of Object.entries(attrs))e.setAttribute(k,v);for(const c of children)e.append(c);return e;}
+function txt(x,y,value,attrs={}){const e=el('text',{x,y,...attrs});e.textContent=value;return e;}
+function tool(x,width,label,action){const g=el('g',{transform:`translate(${x} 0)`,class:'tool',role:'button',tabindex:0});g.append(el('rect',{width,height:28,rx:5,fill:'#24364c',stroke:'#4a6483'}),txt(10,19,label,{fill:'#d5e7fb','font-size':12}));g.onclick=action;g.onkeydown=e=>{if(e.key==='Enter')action();};document.getElementById('svg-tools').append(g);}
+function draw(){
+ const tree=state.mode==='chain'?T.fromPath('main',state.chain,out):T.build('main',state.expanded,out);
+ state.nodes=state.mode==='chain'?T.chainLayout(tree):T.layout(tree);
+ const canvas=document.getElementById('svg-tree');canvas.replaceChildren();
+ const width=Math.max(1100,...state.nodes.map(n=>n.x+n.w+60)),height=Math.max(380,...state.nodes.map(n=>n.y+n.h+100));
+ root.setAttribute('width',width);root.setAttribute('height',height);root.setAttribute('viewBox',`0 0 ${width} ${height}`);
+ for(const n of state.nodes){
+   if(!n.parent)continue;const edge=n.edge,d=T.route(n.parent,n,state.mode==='chain'),color=edge.kind==='callback'?'#c5adf0':edge.kind==='direct'?'#839bb6':'#d7b075';
+   const a=el('a',{href:DATA.nodes[n.id].code,'data-edge':edge.id});const title=el('title');title.textContent=edge.source+' → '+edge.target+'\n'+edge.label+'\n'+edge.note;a.append(title,el('path',{d,class:'hit'}),el('path',{d,class:'wire',stroke:color,'stroke-dasharray':edge.kind==='direct'?'none':'7 5','marker-end':'url(#arrow)'}));canvas.append(a);
+ }
+ for(const n of state.nodes){
+   const fn=DATA.nodes[n.id],color=DATA.groups[fn.group].color,open=state.mode==='tree'&&state.expanded.has(n.key),g=el('g',{transform:`translate(${n.x} ${n.y})`,class:'node','data-node':n.id,'data-key':n.key});
+   const a=el('a',{href:fn.code});const title=el('title');title.textContent=fn.name+'\n'+fn.note+'\n'+fn.path+':'+fn.line;a.append(title,el('rect',{width:n.w,height:n.h,rx:9,fill:'#1b283a',stroke:color,class:'box'}));
+   const name=fn.name;let cut=name.length>39?name.lastIndexOf('_',39):-1;if(cut<16)cut=39;else cut++;
+   const lines=name.length>39?[name.slice(0,cut),name.slice(cut)]:[name];lines.forEach((s,i)=>a.append(txt(14,25+i*18,s,{fill:color,'font-size':13})));
+   a.append(txt(14,69,fn.note.slice(0,26),{fill:'#c8d5e4','font-size':12}),txt(14,89,fn.path.split('/').pop()+':'+fn.line,{fill:'#90a7c1','font-size':11}));
+   if(n.recursive)a.append(txt(14,116,'↩ 递归回到祖先 · 停止展开',{fill:'#d7b075','font-size':11}));else if(!n.count)a.append(txt(14,116,'图中已到末端',{fill:'#8aa0b9','font-size':11}));g.append(a);
+   if(n.count){const button=el('g',{class:'toggle','data-toggle':n.key,role:'button',tabindex:0,'aria-expanded':open?'true':'false'});button.append(el('rect',{x:12,y:99,width:145,height:23,rx:5,fill:'#253d55',stroke:'#577392'}),txt(21,115,open?'− 收起此分支':`＋ ${n.count} 个调用`,{fill:'#d2e7ff','font-size':11}));const toggle=()=>{if(state.mode==='chain'){T.expandPath('main',state.chain,state.expanded);state.mode='tree';state.expanded.add(n.key);}else if(open)T.collapse(n.key,state.expanded);else state.expanded.add(n.key);draw();};button.onclick=toggle;button.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle();}};g.append(button);}canvas.append(g);
+ }
+}
+tool(0,112,'再展开一层',()=>{if(state.mode==='chain'){T.expandPath('main',state.chain,state.expanded);state.mode='tree';}else for(const n of state.nodes)if(n.count&&!state.expanded.has(n.key))state.expanded.add(n.key);draw();});
+tool(122,98,'全部收起',()=>{state.mode='tree';state.expanded.clear();draw();});
+tool(230,160,'CPU 乘法完整链',()=>{state.chain=T.path('main','ggml_compute_forward_mul_mat',out);state.mode='chain';draw();});
+tool(400,112,'返回调用树',()=>{T.expandPath('main',state.chain,state.expanded);state.mode='tree';draw();});
+draw();
+globalThis.svgCallgraph={state,data:DATA,draw};
+]]></script>
+</svg>

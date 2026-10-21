@@ -754,6 +754,13 @@ static struct ggml_tensor * ggml_dup_tensor_layout(struct ggml_context * ctx, co
     return dup;
 }
 
+/*
+判断 op 是否属于“视图类操作”， 视图类操作的共同点是：共享原张量的底层数据，通过调整形状、步长或偏移来访问数据。
+VIEW	    查看原张量的某个区域	 数据偏移、形状、步长
+RESHAPE	    改变形状，保持元素总数	 ne[] 和对应步长；要求输入连续
+PERMUTE	    重新排列维度	        重排 ne[] 和 nb[]
+TRANSPOSE	交换第 0、1 维	        交换前两个 ne 和 nb
+*/
 static bool ggml_is_view_op(enum ggml_op op) {
     return op == GGML_OP_VIEW || op == GGML_OP_RESHAPE || op == GGML_OP_PERMUTE || op == GGML_OP_TRANSPOSE;
 }
@@ -840,8 +847,11 @@ struct ggml_backend_sched {
     int debug_prev_graph_size;
 };
 
+// 通过 tensor 查找哈希表中的 id
 #define hash_id(tensor) ggml_hash_find_or_insert(&sched->hash_set, tensor)
+// 通过 tensor 查找到 backend id
 #define tensor_backend_id(tensor) sched->hv_tensor_backend_ids[hash_id(tensor)]
+
 #define tensor_id_copy(id, backend_id, copy_id) sched->hv_tensor_copies[(id) * sched->n_backends * sched->n_copies + (backend_id) * sched->n_copies + (copy_id)]
 #define tensor_copy(tensor, backend_id, copy_id) tensor_id_copy(hash_id(tensor), backend_id, copy_id)
 
@@ -885,12 +895,14 @@ static int ggml_backend_sched_backend_id(ggml_backend_sched_t sched, ggml_backen
     return -1;
 }
 
+// tensor: 检查哪一个张量的 buffer, op: 检查哪一个节点的运算
 static int ggml_backend_sched_backend_from_buffer(ggml_backend_sched_t sched, const struct ggml_tensor * tensor, const struct ggml_tensor * op) {
     ggml_backend_buffer_t buffer = tensor->view_src ? tensor->view_src->buffer : tensor->buffer;
     if (buffer == NULL) {
         return -1;
     }
 
+    // 按照后端优先级(升序 i)遍历， 如果后端支持 buffer 的类型 && 并且后端支持 op_tensor 的运算，并返回该后端的编号
     // find highest prio backend that supports the buffer type and the op
     for (int i = 0; i < sched->n_backends; i++) {
         if (ggml_backend_supports_buft(sched->backends[i], buffer->buft) &&
@@ -917,34 +929,49 @@ static char causes[GGML_DEFAULT_GRAPH_SIZE*16 + GGML_SCHED_MAX_SPLITS_DEBUG*GGML
 #define GET_CAUSE(node) ""
 #endif
 
+// 根据张量目前的存储位置、输入标记和权重位置，为当前节点推断一个执行后端。
+// 这里的 tensor 通常同时代表“结果张量” 和 “生成这个结果的运算”。
+/*
+    Y = ggml_mul_mat(ctx, W, X); 
+    成员	     含义
+    Y->op	    矩阵乘法操作
+    Y->src[0]	输入权重 W
+    Y->src[1]	输入 X
+    Y->buffer	Y 的结果存储区，尚未分配时通常为 NULL
+    ggml_backend_sched_backend_id_from_cur(sched, Y); 实际在判断：生成 Y 的这次矩阵乘法，应该交给哪个后端执行？
+*/
 // returns the backend that should be used for the node based on the current locations
 static int ggml_backend_sched_backend_id_from_cur(ggml_backend_sched_t sched, struct ggml_tensor * tensor) {
+    // 1. 先检查结果的存储位置。
     // assign pre-allocated nodes to their backend
     int cur_backend_id = ggml_backend_sched_backend_from_buffer(sched, tensor, tensor);
     if (cur_backend_id != -1) {
-        SET_CAUSE(tensor, "1.dst");
+        SET_CAUSE(tensor, "1.dst");     // 根据当前张量的存储选择
         return cur_backend_id;
     }
 
+    // 2. 对于 view，再尝试根据共享存储的来源选择。
     // view_src
     if (tensor->view_src != NULL) {
         cur_backend_id = ggml_backend_sched_backend_from_buffer(sched, tensor->view_src, tensor);
         if (cur_backend_id != -1) {
-            SET_CAUSE(tensor, "1.vsrc");
+            SET_CAUSE(tensor, "1.vsrc");  // 根据 view 源存储选择
             return cur_backend_id;
         }
     }
 
+    // 3．结果已经有存储，却找不到可执行后端，就直接报错。
     if (tensor->buffer || (tensor->view_src && tensor->view_src->buffer)) {
         // since the tensor is pre-allocated, it cannot be moved to another backend
         ggml_backend_buffer_t buffer = tensor->view_src ? tensor->view_src->buffer : tensor->buffer;
         GGML_ABORT("pre-allocated tensor (%s) in a buffer (%s) that cannot run the operation (%s)", tensor->name, ggml_backend_buffer_name(buffer), ggml_op_name(tensor->op));
     }
 
+    // 4．尚未分配存储的图输入，默认交给最后的 CPU 后端。
     // graph input
     if (tensor->flags & GGML_TENSOR_FLAG_INPUT) {
         cur_backend_id = sched->n_backends - 1; // last backend (assumed CPU)
-        SET_CAUSE(tensor, "1.inp");
+        SET_CAUSE(tensor, "1.inp");     // 根据 INPUT 标记选择 CPU
         return cur_backend_id;
     }
 
@@ -952,30 +979,40 @@ static int ggml_backend_sched_backend_id_from_cur(ggml_backend_sched_t sched, st
     // TODO: there are exceptions (see below) - not an ideal solution
     bool allow = true;
 
+    // 5．排除两个不适合按小权重决定后端的操作。
     // skip ROPE since the rope freqs tensor is too small to choose a backend based on it
     allow = allow && tensor->op != GGML_OP_ROPE;
 
     // skip FLASH_ATTN_EXT since the sinks tensor is too small to choose a based based on it
     allow = allow && tensor->op != GGML_OP_FLASH_ATTN_EXT;
 
+    // 6．寻找标记为 WEIGHTS 的输入，优先在兼容其存储的后端执行。
     if (allow) {
         for (int i = 0; i < GGML_MAX_SRC; i++) {
             const struct ggml_tensor * src = tensor->src[i];
             if (src == NULL) {
                 continue;
             }
+
+            // buffer 的用途标记
             if (src->buffer != NULL && src->buffer->usage == GGML_BACKEND_BUFFER_USAGE_WEIGHTS) {
+                // src_backend_id 表示根据该权重存储找到的执行候选，不一定是最初分配权重的后端。
                 int src_backend_id = ggml_backend_sched_backend_from_buffer(sched, src, tensor);
+                
+                // 权重候选是 CPU 时，允许更高优先级后端主动接管计算。
+                // 开启这条算子 offload 选择规则 && 前面根据权重得到的候选是最后的 CPU && 权重处于 host buffer
                 // check if a backend with higher prio wants to offload the op
                 if (sched->op_offload && src_backend_id == sched->n_backends - 1 && ggml_backend_buffer_is_host(src->buffer)) {
                     for (int b = 0; b < src_backend_id; b++) {
+                        // 这个后端能否执行当前操作及其张量配置？ && 按照这个后端自身的策略，当前操作是否适合接管？
                         if (ggml_backend_supports_op(sched->backends[b], tensor) && ggml_backend_offload_op(sched->backends[b], tensor)) {
-                            SET_CAUSE(tensor, "1.off");
+                            SET_CAUSE(tensor, "1.off");     // 更高优先级后端接受 offload
                             return b;
                         }
                     }
                 }
-                SET_CAUSE(tensor, "1.wgt%d", i);
+
+                SET_CAUSE(tensor, "1.wgt%d", i);    // 根据对应 src[i] 的权重存储选择
                 return src_backend_id;
             }
         }
@@ -1084,6 +1121,7 @@ void ggml_backend_sched_split_graph(ggml_backend_sched_t sched, struct ggml_cgra
 
     graph->uid = ggml_graph_next_uid();
 
+    // 张量已经有内存，或者权重位置已确定，能否据此选后端？
     // pass 1: assign backends to ops with pre-allocated inputs
     for (int i = 0; i < graph->n_leafs; i++) {
         struct ggml_tensor * leaf = graph->leafs[i];
@@ -1121,22 +1159,49 @@ void ggml_backend_sched_split_graph(ggml_backend_sched_t sched, struct ggml_cgra
         }
     }
 
+    // 能否把已有后端分配向前、向后扩展，减少后端切换？
     // pass 2: expand current backend assignments
     // assign the same backend to adjacent nodes
     // expand gpu backends (i.e. non last prio) up and down, ignoring cpu (the lowest priority backend)
     // thus, cpu will never be used unless weights are on cpu, or there are no gpu ops between cpu ops
     // ops unsupported by the backend being expanded will be left unassigned so that they can be assigned later when the locations of its inputs are known
-    // expand gpu down
+    // expand gpu down (GPU 正扫)
     {
-        int cur_backend_id = -1;
+        int cur_backend_id = -1;    // 扫描携带的候选后端编号
         for (int i = 0; i < graph->n_nodes; i++) {
             struct ggml_tensor * node = graph->nodes[i];
             if (ggml_is_view_op(node->op)) {
                 continue;
             }
+
             int * node_backend_id = &tensor_backend_id(node);
             if (*node_backend_id != -1) {
                 if (*node_backend_id == sched->n_backends - 1) {
+                    // skip cpu (lowest prio backend)
+                    cur_backend_id = -1;
+                } else {
+                    cur_backend_id = *node_backend_id;              // 遇到已分配的非 CPU 节点，就记住它的编号
+                }
+
+            } else if (cur_backend_id != -1) {
+                // 遇到未分配节点，则尝试将记住的编号赋给它，但必须通过 supports_op
+                ggml_backend_sched_set_if_supported(sched, node, cur_backend_id, node_backend_id);
+            }
+        }
+    }
+
+    // expand gpu up (GPU 反扫)
+    {
+        int cur_backend_id = -1;
+        for (int i = graph->n_nodes - 1; i >= 0; i--) {
+            struct ggml_tensor * node = graph->nodes[i];
+            if (ggml_is_view_op(node->op)) {
+                continue;
+            }
+
+            int * node_backend_id = &tensor_backend_id(node);
+            if (*node_backend_id != -1) {
+                if (*node_backend_id == sched->n_backends - 1) {    // 以 n_backends-1 区分最后 CPU 后端
                     // skip cpu (lowest prio backend)
                     cur_backend_id = -1;
                 } else {
@@ -1147,28 +1212,8 @@ void ggml_backend_sched_split_graph(ggml_backend_sched_t sched, struct ggml_cgra
             }
         }
     }
-    // expand gpu up
-    {
-        int cur_backend_id = -1;
-        for (int i = graph->n_nodes - 1; i >= 0; i--) {
-            struct ggml_tensor * node = graph->nodes[i];
-            if (ggml_is_view_op(node->op)) {
-                continue;
-            }
-            int * node_backend_id = &tensor_backend_id(node);
-            if (*node_backend_id != -1) {
-                if (*node_backend_id == sched->n_backends - 1) {
-                    // skip cpu (lowest prio backend)
-                    cur_backend_id = -1;
-                } else {
-                    cur_backend_id = *node_backend_id;
-                }
-            } else if (cur_backend_id != -1) {
-                ggml_backend_sched_set_if_supported(sched, node, cur_backend_id, node_backend_id);
-            }
-        }
-    }
-    // expand rest down
+
+    // expand rest down (CPU 正扫)
     {
         int cur_backend_id = -1;
         for (int i = 0; i < graph->n_nodes; i++) {
@@ -1176,22 +1221,7 @@ void ggml_backend_sched_split_graph(ggml_backend_sched_t sched, struct ggml_cgra
             if (ggml_is_view_op(node->op)) {
                 continue;
             }
-            int * node_backend_id = &tensor_backend_id(node);
-            if (*node_backend_id != -1) {
-                cur_backend_id = *node_backend_id;
-            } else if (cur_backend_id != -1) {
-                ggml_backend_sched_set_if_supported(sched, node, cur_backend_id, node_backend_id);
-            }
-        }
-    }
-    // expand rest up
-    {
-        int cur_backend_id = -1;
-        for (int i = graph->n_nodes - 1; i >= 0; i--) {
-            struct ggml_tensor * node = graph->nodes[i];
-            if (ggml_is_view_op(node->op)) {
-                continue;
-            }
+
             int * node_backend_id = &tensor_backend_id(node);
             if (*node_backend_id != -1) {
                 cur_backend_id = *node_backend_id;
@@ -1201,6 +1231,25 @@ void ggml_backend_sched_split_graph(ggml_backend_sched_t sched, struct ggml_cgra
         }
     }
 
+    // expand rest up (CPU 反扫)
+    {
+        int cur_backend_id = -1;
+        for (int i = graph->n_nodes - 1; i >= 0; i--) {
+            struct ggml_tensor * node = graph->nodes[i];
+            if (ggml_is_view_op(node->op)) {
+                continue;
+            }
+
+            int * node_backend_id = &tensor_backend_id(node);
+            if (*node_backend_id != -1) {
+                cur_backend_id = *node_backend_id;
+            } else if (cur_backend_id != -1) {
+                ggml_backend_sched_set_if_supported(sched, node, cur_backend_id, node_backend_id);
+            }
+        }
+    }
+
+    // 未分配节点交给谁更合适？已分配节点能否转到优先级更高且内存兼容的后端？
     // pass 3: upgrade nodes to higher prio backends with compatible buffer types
     // if the tensor is already in the same buffer type (*) as another higher priority backend, we should move it there
     // however, we also need to verify that the sources are in compatible buffer types
@@ -1214,8 +1263,9 @@ void ggml_backend_sched_split_graph(ggml_backend_sched_t sched, struct ggml_cgra
         if (ggml_is_view_op(node->op)) {
             continue;
         }
+
         int * node_backend_id = &tensor_backend_id(node);
-        if (*node_backend_id == -1) {
+        if (*node_backend_id == -1) {       // node 尚未分配 backend
             // unassigned node: find the backend with the most supported inputs
             int n_supported_best = -1;
             for (int b = 0; b < sched->n_backends; b++) {
@@ -1230,6 +1280,7 @@ void ggml_backend_sched_split_graph(ggml_backend_sched_t sched, struct ggml_cgra
                             n_supported++;
                         }
                     }
+
                     if (n_supported > n_supported_best) {
                         n_supported_best = n_supported;
                         *node_backend_id = b;
@@ -1237,7 +1288,7 @@ void ggml_backend_sched_split_graph(ggml_backend_sched_t sched, struct ggml_cgra
                     }
                 }
             }
-        } else {
+        } else {    // node 已分配 backend
             // assigned node: upgrade to higher prio backend if possible
             for (int b = 0; b < *node_backend_id; b++) {
                 if (sched->bufts[b] == sched->bufts[*node_backend_id] && ggml_backend_supports_op(sched->backends[b], node)) {
@@ -1247,11 +1298,13 @@ void ggml_backend_sched_split_graph(ggml_backend_sched_t sched, struct ggml_cgra
                         if (src == NULL) {
                             continue;
                         }
+
                         if (!ggml_backend_sched_buffer_supported(sched, src, b)) {
                             supported = false;
                             break;
                         }
                     }
+
                     if (supported) {
                         *node_backend_id = b;
                         SET_CAUSE(node, "3.upg");
@@ -1262,6 +1315,7 @@ void ggml_backend_sched_split_graph(ggml_backend_sched_t sched, struct ggml_cgra
         }
     }
 
+    // 补齐剩余输入和 view 的后端归属，处理兜底分配。
     // pass 4: assign backends to remaining src from dst and view_src
     for (int i = 0; i < graph->n_nodes; i++) {
         struct ggml_tensor * node = graph->nodes[i];
@@ -1270,11 +1324,13 @@ void ggml_backend_sched_split_graph(ggml_backend_sched_t sched, struct ggml_cgra
             *cur_backend_id = tensor_backend_id(node->view_src);
             SET_CAUSE(node, "4.vsrc");
         }
+
         for (int j = 0; j < GGML_MAX_SRC; j++) {
             struct ggml_tensor * src = node->src[j];
             if (src == NULL) {
                 continue;
             }
+
             int * src_backend_id = &tensor_backend_id(src);
             if (*src_backend_id == -1) {
                 if (src->view_src != NULL) {
@@ -1287,6 +1343,7 @@ void ggml_backend_sched_split_graph(ggml_backend_sched_t sched, struct ggml_cgra
                 }
             }
         }
+
         // if the node is still unassigned, assign it to the first backend that supports it
         for (int b = 0; b < sched->n_backends && *cur_backend_id == -1; b++) {
             ggml_backend_sched_set_if_supported(sched, node, b, cur_backend_id);
@@ -1294,6 +1351,7 @@ void ggml_backend_sched_split_graph(ggml_backend_sched_t sched, struct ggml_cgra
         GGML_ASSERT(*cur_backend_id != -1);
     }
 
+    // 在哪里切分？哪些输入需要副本？节点的 src 应该指向谁？
     // pass 5: split graph, find tensors that need to be copied
     {
         int i_split = 0;
@@ -1307,6 +1365,7 @@ void ggml_backend_sched_split_graph(ggml_backend_sched_t sched, struct ggml_cgra
                 break;
             }
         }
+
         split->i_start = 0;
         split->n_inputs = 0;
         int cur_backend_id = split->backend_id;
@@ -1329,6 +1388,7 @@ void ggml_backend_sched_split_graph(ggml_backend_sched_t sched, struct ggml_cgra
                     if (src == NULL) {
                         continue;
                     }
+
                     // check if a weight is on a different and incompatible backend
                     // by starting a new split, the memory of the previously offloaded weights can be reused
                     if (src->buffer != NULL && src->buffer->usage == GGML_BACKEND_BUFFER_USAGE_WEIGHTS) {
@@ -1354,6 +1414,7 @@ void ggml_backend_sched_split_graph(ggml_backend_sched_t sched, struct ggml_cgra
                         memset(&sched->splits[k], 0, sizeof(struct ggml_backend_sched_split));
                     }
                 }
+
                 split = &sched->splits[i_split];
                 split->backend_id = node_backend_id;
                 split->i_start = i;
@@ -1383,11 +1444,13 @@ void ggml_backend_sched_split_graph(ggml_backend_sched_t sched, struct ggml_cgra
                                 tensor_copy = ggml_dup_tensor_layout(sched->ctx, src);
                                 ggml_format_name(tensor_copy, "%s#%s#%d", ggml_backend_name(backend), src->name, c);
                             }
+
                             ggml_set_input(tensor_copy);
                             ggml_set_output(tensor_copy); // prevent ggml-alloc from overwriting the tensor
                             tensor_id_copy(src_id, src_backend_id, c) = tensor_copy;
                             SET_CAUSE(tensor_copy, "4.cpy");
                         }
+
                         int n_graph_inputs = sched->n_graph_inputs++;
                         if (n_graph_inputs >= sched->graph_inputs_capacity) {
                             ggml_backend_sched_graph_inputs_grow(sched);
@@ -1407,9 +1470,11 @@ void ggml_backend_sched_split_graph(ggml_backend_sched_t sched, struct ggml_cgra
                                 ggml_set_input(tensor_copy);
                                 ggml_set_output(tensor_copy); // prevent ggml-alloc from overwriting the tensor
                             }
+
                             tensor_id_copy(src_id, cur_backend_id, c) = tensor_copy;
                             SET_CAUSE(tensor_copy, "4.cpy");
                         }
+
                         int n_inputs = split->n_inputs++;
                         if (n_inputs >= split->inputs_capacity) {
                             ggml_backend_sched_split_inputs_grow(split);

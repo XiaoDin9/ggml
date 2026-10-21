@@ -113,7 +113,7 @@ struct ggml_cgraph * build_graph(simple_model& model) {
 // compute with backend
 struct ggml_tensor * compute(simple_model & model, struct ggml_cgraph * gf) {
     ggml_backend_sched_reset(model.sched);
-    ggml_backend_sched_alloc_graph(model.sched, gf);
+    ggml_backend_sched_alloc_graph(model.sched, gf);            // todo...
 
     // load data from cpu memory to backend buffer
     ggml_backend_tensor_set(model.a, matrix_A, 0, ggml_nbytes(model.a));
