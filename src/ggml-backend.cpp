@@ -2008,7 +2008,9 @@ ggml_backend_sched_t ggml_backend_sched_new(
 
     // 准备临时上下文空间
     // 调度器处理计算图时，需要一块地方存放临时创建的“说明书”和“执行目录”。
-    sched->context_buffer_size = ggml_sched_max_splits * GGML_SCHED_MAX_SPLIT_INPUTS * 2 * sizeof(struct ggml_tensor) + ggml_graph_overhead_custom(graph_size, false);
+    sched->context_buffer_size = 
+        ggml_sched_max_splits * GGML_SCHED_MAX_SPLIT_INPUTS * 2 * sizeof(struct ggml_tensor) + 
+        ggml_graph_overhead_custom(graph_size, false);
     sched->context_buffer = (char *) malloc(sched->context_buffer_size);
 
     /* 准备执行片段列表 splits, split 理解为: 交给某个后端执行的一段图
@@ -2033,6 +2035,7 @@ ggml_backend_sched_t ggml_backend_sched_new(
     */
     for (int b = 0; b < n_backends; b++) {
         sched->backends[b] = backends[b];
+        // bufts 非空时使用对应项，否则取各后端默认 buffer type, 再检查该后端是否支持这种内存类型
         sched->bufts[b] = bufts ? bufts[b] : ggml_backend_get_default_buffer_type(backends[b]);
         GGML_ASSERT(ggml_backend_supports_buft(backends[b], sched->bufts[b]));
 
